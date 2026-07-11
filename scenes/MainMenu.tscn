@@ -1,19 +1,98 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/backgrounds/WhatsApp Image 2026-07-11 at 2.28.02 PM.jpeg" id="1_background"]
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="2_script"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxPanel"]
-bg_color = Color(0.09, 0.035, 0.16, 0.82)
+[sub_resource type="StyleBoxFlat" id="MenuPanelStyle"]
+bg_color = Color(0.055, 0.018, 0.12, 0.84)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.62, 0.35, 0.95, 0.85)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
+border_color = Color(0.66, 0.38, 1, 0.9)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0.32, 0.08, 0.55, 0.7)
+shadow_size = 16
+
+[sub_resource type="StyleBoxFlat" id="ButtonNormalStyle"]
+bg_color = Color(0.16, 0.055, 0.29, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.56, 0.3, 0.88, 0.85)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.22, 0.02, 0.4, 0.65)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="ButtonHoverStyle"]
+bg_color = Color(0.31, 0.1, 0.5, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.66, 1, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.55, 0.2, 0.9, 0.9)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="ButtonPressedStyle"]
+bg_color = Color(0.11, 0.03, 0.21, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.73, 0.48, 1, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="PopupStyle"]
+bg_color = Color(0.035, 0.012, 0.075, 0.97)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7, 0.43, 1, 0.95)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0, 0, 0, 0.8)
+shadow_size = 24
+
+[sub_resource type="Gradient" id="FogGradient"]
+offsets = PackedFloat32Array(0.0, 0.22, 0.5, 0.78, 1.0)
+colors = PackedColorArray(0.62, 0.46, 0.88, 0.0, 0.65, 0.49, 0.93, 0.16, 0.84, 0.72, 1.0, 0.28, 0.65, 0.49, 0.93, 0.16, 0.62, 0.46, 0.88, 0.0)
+
+[sub_resource type="GradientTexture2D" id="FogTexture"]
+gradient = SubResource("FogGradient")
+width = 1024
+height = 220
+fill_from = Vector2(0.5, 0.0)
+fill_to = Vector2(0.5, 1.0)
+
+[sub_resource type="Gradient" id="MoonGlowGradient"]
+offsets = PackedFloat32Array(0.0, 0.4, 1.0)
+colors = PackedColorArray(0.93, 0.82, 1.0, 0.35, 0.72, 0.48, 1.0, 0.12, 0.35, 0.1, 0.6, 0.0)
+
+[sub_resource type="GradientTexture2D" id="MoonGlowTexture"]
+gradient = SubResource("MoonGlowGradient")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1.0, 0.5)
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -36,6 +115,18 @@ texture = ExtResource("1_background")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="MoonGlow" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -80.0
+offset_top = -110.0
+offset_right = 500.0
+offset_bottom = 470.0
+mouse_filter = 2
+texture = SubResource("MoonGlowTexture")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1, 1, 1, 0.72)
+
 [node name="DarkOverlay" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -44,81 +135,286 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.045, 0.01, 0.08, 0.38)
+color = Color(0.025, 0.006, 0.055, 0.25)
+
+[node name="FogBack" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -180.0
+offset_top = 500.0
+offset_right = 1460.0
+offset_bottom = 760.0
+mouse_filter = 2
+texture = SubResource("FogTexture")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(0.7, 0.56, 0.95, 0.35)
+
+[node name="FogFront" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -260.0
+offset_top = 545.0
+offset_right = 1540.0
+offset_bottom = 820.0
+mouse_filter = 2
+texture = SubResource("FogTexture")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(0.82, 0.7, 1, 0.5)
+
+[node name="StarOne" type="Label" parent="."]
+layout_mode = 0
+offset_left = 438.0
+offset_top = 108.0
+offset_right = 478.0
+offset_bottom = 148.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "✦"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StarTwo" type="Label" parent="."]
+layout_mode = 0
+offset_left = 612.0
+offset_top = 78.0
+offset_right = 652.0
+offset_bottom = 118.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.82, 0.72, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "✧"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StarThree" type="Label" parent="."]
+layout_mode = 0
+offset_left = 763.0
+offset_top = 142.0
+offset_right = 803.0
+offset_bottom = 182.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 17
+text = "✦"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StarFour" type="Label" parent="."]
+layout_mode = 0
+offset_left = 930.0
+offset_top = 72.0
+offset_right = 970.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.8, 0.68, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "✧"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GhostLeft" type="Label" parent="."]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 340.0
+offset_right = 185.0
+offset_bottom = 455.0
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.72)
+theme_override_font_sizes/font_size = 62
+text = "👻"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GhostMiddle" type="Label" parent="."]
+layout_mode = 0
+offset_left = 720.0
+offset_top = 305.0
+offset_right = 820.0
+offset_bottom = 405.0
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.58)
+theme_override_font_sizes/font_size = 50
+text = "👻"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GhostRight" type="Label" parent="."]
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 230.0
+offset_right = 1185.0
+offset_bottom = 335.0
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.68)
+theme_override_font_sizes/font_size = 56
+text = "👻"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="MenuPanel" type="Panel" parent="."]
 layout_mode = 0
-offset_left = 420.0
-offset_top = 230.0
-offset_right = 860.0
-offset_bottom = 625.0
+offset_left = 165.0
+offset_top = 310.0
+offset_right = 505.0
+offset_bottom = 655.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxPanel")
+theme_override_styles/panel = SubResource("MenuPanelStyle")
 
 [node name="TitleLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 230.0
-offset_top = 48.0
-offset_right = 1050.0
-offset_bottom = 125.0
+offset_left = 140.0
+offset_top = 55.0
+offset_right = 740.0
+offset_bottom = 135.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.96, 0.9, 1, 1)
-theme_override_colors/font_shadow_color = Color(0.06, 0.01, 0.1, 0.95)
-theme_override_constants/shadow_offset_x = 4
-theme_override_constants/shadow_offset_y = 4
-theme_override_font_sizes/font_size = 52
+theme_override_colors/font_color = Color(0.98, 0.93, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.08, 0.005, 0.12, 1)
+theme_override_constants/shadow_offset_x = 5
+theme_override_constants/shadow_offset_y = 5
+theme_override_font_sizes/font_size = 48
 text = "TINY GHOST HOTEL"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 300.0
-offset_top = 125.0
-offset_right = 980.0
-offset_bottom = 175.0
+offset_left = 165.0
+offset_top = 135.0
+offset_right = 700.0
+offset_bottom = 185.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.82, 0.73, 0.96, 1)
-theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(0.86, 0.77, 0.98, 1)
+theme_override_colors/font_shadow_color = Color(0.06, 0.01, 0.1, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 19
 text = "Every ghost deserves the perfect room."
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="EnterHotelButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 500.0
-offset_top = 335.0
-offset_right = 780.0
-offset_bottom = 400.0
-theme_override_font_sizes/font_size = 22
+offset_left = 205.0
+offset_top = 365.0
+offset_right = 465.0
+offset_bottom = 425.0
+theme_override_colors/font_color = Color(0.97, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("ButtonNormalStyle")
+theme_override_styles/hover = SubResource("ButtonHoverStyle")
+theme_override_styles/pressed = SubResource("ButtonPressedStyle")
 text = "ENTER HOTEL"
 
 [node name="HowToPlayButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 500.0
-offset_top = 425.0
-offset_right = 780.0
-offset_bottom = 490.0
-theme_override_font_sizes/font_size = 20
+offset_left = 205.0
+offset_top = 455.0
+offset_right = 465.0
+offset_bottom = 515.0
+theme_override_colors/font_color = Color(0.97, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("ButtonNormalStyle")
+theme_override_styles/hover = SubResource("ButtonHoverStyle")
+theme_override_styles/pressed = SubResource("ButtonPressedStyle")
 text = "HOW TO PLAY"
 
 [node name="QuitButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 500.0
-offset_top = 515.0
-offset_right = 780.0
-offset_bottom = 580.0
-theme_override_font_sizes/font_size = 20
+offset_left = 205.0
+offset_top = 545.0
+offset_right = 465.0
+offset_bottom = 605.0
+theme_override_colors/font_color = Color(0.97, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("ButtonNormalStyle")
+theme_override_styles/hover = SubResource("ButtonHoverStyle")
+theme_override_styles/pressed = SubResource("ButtonPressedStyle")
 text = "QUIT HOTEL"
 
 [node name="FooterLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 430.0
-offset_top = 650.0
-offset_right = 850.0
-offset_bottom = 690.0
+offset_left = 165.0
+offset_top = 670.0
+offset_right = 505.0
+offset_bottom = 710.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.72, 0.66, 0.86, 1)
-theme_override_font_sizes/font_size = 16
-text = "Night Shift Build 0.1"
+theme_override_colors/font_color = Color(0.75, 0.66, 0.88, 1)
+theme_override_font_sizes/font_size = 14
+text = "Night Shift Build 0.2"
 horizontal_alignment = 1
+
+[node name="HowToPlayOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="HowToPlayPanel" type="Panel" parent="HowToPlayOverlay"]
+layout_mode = 0
+offset_left = 340.0
+offset_top = 165.0
+offset_right = 940.0
+offset_bottom = 575.0
+theme_override_styles/panel = SubResource("PopupStyle")
+
+[node name="HowToPlayTitle" type="Label" parent="HowToPlayOverlay/HowToPlayPanel"]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 35.0
+offset_right = 530.0
+offset_bottom = 95.0
+theme_override_colors/font_color = Color(0.97, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "HOW TO PLAY"
+horizontal_alignment = 1
+
+[node name="HowToPlayText" type="Label" parent="HowToPlayOverlay/HowToPlayPanel"]
+layout_mode = 0
+offset_left = 65.0
+offset_top = 115.0
+offset_right = 535.0
+offset_bottom = 295.0
+theme_override_colors/font_color = Color(0.88, 0.82, 0.96, 1)
+theme_override_font_sizes/font_size = 19
+text = "Read each ghost guest's clues.
+
+Choose the room that matches their preference:
+❄ Cold Room
+🌑 Dark Room
+🎵 Music Room
+
+Wrong choices cost one life.
+Fast answers and streaks earn bonus points."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseHowToPlayButton" type="Button" parent="HowToPlayOverlay/HowToPlayPanel"]
+layout_mode = 0
+offset_left = 175.0
+offset_top = 325.0
+offset_right = 425.0
+offset_bottom = 380.0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("ButtonNormalStyle")
+theme_override_styles/hover = SubResource("ButtonHoverStyle")
+theme_override_styles/pressed = SubResource("ButtonPressedStyle")
+text = "BACK"
+
+[node name="TransitionOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+modulate = Color(1, 1, 1, 0)

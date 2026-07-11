@@ -1,18 +1,108 @@
-[gd_scene format=3 uid="uid://c3d4gc3h1e8te"]
+[gd_scene load_steps=9 format=3]
 
-[ext_resource type="Script" uid="uid://cqmxw4hnijgho" path="res://main.gd" id="1_ig7tw"]
-[ext_resource type="Texture2D" uid="uid://dip7g8m20lwf8" path="res://assets/backgrounds/hauntedhotel.jpg" id="2_hotel"]
+[ext_resource type="Script" path="res://main.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/hauntedhotel.jpg" id="2_background"]
 
-[node name="Main" type="Control" unique_id=2005978016]
+[sub_resource type="StyleBoxFlat" id="HudStyle"]
+bg_color = Color(0.035, 0.012, 0.075, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.32, 0.88, 0.9)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="ReceptionStyle"]
+bg_color = Color(0.055, 0.018, 0.11, 0.91)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.68, 0.42, 1, 0.95)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0.18, 0.02, 0.32, 0.75)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="ColdNormal"]
+bg_color = Color(0.08, 0.31, 0.52, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.82, 1, 0.95)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="DarkNormal"]
+bg_color = Color(0.12, 0.07, 0.29, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.58, 0.43, 0.91, 0.95)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="MusicNormal"]
+bg_color = Color(0.42, 0.08, 0.34, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.47, 0.86, 0.95)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+bg_color = Color(0.46, 0.2, 0.7, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.92, 0.79, 1, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.52, 0.2, 0.9, 0.9)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="SmallButton"]
+bg_color = Color(0.13, 0.045, 0.24, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.62, 0.39, 0.9, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="Main" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_ig7tw")
+script = ExtResource("1_script")
 
-[node name="HotelBackground" type="TextureRect" parent="." unique_id=788489261]
+[node name="NightBackground" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,11 +110,21 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_hotel")
+color = Color(0.02, 0.008, 0.06, 1)
+
+[node name="HotelBackground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_background")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="NightBackground" type="ColorRect" parent="." unique_id=1276563669]
+[node name="BackgroundTint" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,242 +132,213 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.035, 0.018, 0.11, 1)
+color = Color(0.025, 0.006, 0.07, 0.72)
 
-[node name="BackgroundTint" type="ColorRect" parent="." unique_id=125881850]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.08, 0.025, 0.18, 0.5)
-
-[node name="World" type="Node2D" parent="." unique_id=428958537]
-
-[node name="MoonLabel" type="Label" parent="." unique_id=113001362]
-layout_mode = 0
-offset_left = 910.0
-offset_top = 50.0
-offset_right = 1070.0
-offset_bottom = 190.0
-theme_override_colors/font_color = Color(0.93, 0.9, 0.67, 0.8)
-theme_override_font_sizes/font_size = 90
-text = "🌕"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="HotelSilhouette" type="Label" parent="." unique_id=523992975]
-modulate = Color(0.5, 0.4, 0.8, 0.55)
-layout_mode = 0
-offset_left = 55.0
-offset_top = 285.0
-offset_right = 415.0
-offset_bottom = 625.0
-theme_override_font_sizes/font_size = 190
-text = "🏨"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="FloatingGhost" type="Label" parent="." unique_id=960578484]
-layout_mode = 0
-offset_left = 850.0
-offset_top = 275.0
-offset_right = 1020.0
-offset_bottom = 430.0
-theme_override_font_sizes/font_size = 82
-text = "👻"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="MenuPanel" type="Panel" parent="." unique_id=1063779369]
-modulate = Color(0.22, 0.1, 0.38, 0.92)
-layout_mode = 0
-offset_left = 365.0
-offset_top = 220.0
-offset_right = 815.0
-offset_bottom = 590.0
-mouse_filter = 2
-
-[node name="TitleLabel" type="Label" parent="." unique_id=2102492376]
-layout_mode = 0
-offset_left = 265.0
-offset_top = 45.0
-offset_right = 915.0
-offset_bottom = 125.0
-theme_override_colors/font_color = Color(0.96, 0.9, 1, 1)
-theme_override_colors/font_shadow_color = Color(0.1, 0.02, 0.18, 0.95)
-theme_override_constants/shadow_offset_x = 4
-theme_override_constants/shadow_offset_y = 4
-theme_override_font_sizes/font_size = 44
-text = "TINY GHOST HOTEL"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="." unique_id=1988009025]
-layout_mode = 0
-offset_left = 290.0
-offset_top = 125.0
-offset_right = 890.0
-offset_bottom = 175.0
-theme_override_colors/font_color = Color(0.8, 0.7, 0.95, 1)
-theme_override_font_sizes/font_size = 20
-text = "The night shift is about to begin..."
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ScoreLabel" type="Label" parent="." unique_id=866001402]
-layout_mode = 0
-offset_left = 25.0
-offset_top = 20.0
-offset_right = 285.0
-offset_bottom = 60.0
-theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "Score: 0 | Streak: 0"
-
-[node name="LivesLabel" type="Label" parent="." unique_id=536498030]
-layout_mode = 0
-offset_left = 25.0
-offset_top = 62.0
-offset_right = 285.0
-offset_bottom = 100.0
-theme_override_colors/font_color = Color(1, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 20
-text = "Lives: ❤ ❤ ❤"
-
-[node name="RoundLabel" type="Label" parent="." unique_id=123348400]
-layout_mode = 0
-offset_left = 930.0
-offset_top = 25.0
-offset_right = 1125.0
-offset_bottom = 65.0
-theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "Round 0/10"
-horizontal_alignment = 2
-
-[node name="RequestLabel" type="Label" parent="." unique_id=2046229963]
-layout_mode = 0
-offset_left = 280.0
-offset_top = 115.0
-offset_right = 900.0
-offset_bottom = 170.0
-theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 22
-text = "A ghost is approaching the lobby..."
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="MessageLabel" type="Label" parent="." unique_id=1468701823]
+[node name="LobbyTitle" type="Label" parent="."]
 layout_mode = 0
 offset_left = 250.0
+offset_top = 20.0
+offset_right = 1030.0
+offset_bottom = 78.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.97, 0.91, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.04, 0.005, 0.08, 1)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 4
+theme_override_font_sizes/font_size = 34
+text = "TINY GHOST HOTEL — RECEPTION"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HudPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 88.0
+offset_right = 1250.0
+offset_bottom = 148.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("HudStyle")
+
+[node name="ScoreLabel" type="Label" parent="HudPanel"]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 12.0
+offset_right = 355.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 19
+text = "Score: 0 | Streak: 0"
+
+[node name="LivesLabel" type="Label" parent="HudPanel"]
+layout_mode = 0
+offset_left = 460.0
+offset_top = 12.0
+offset_right = 760.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(1, 0.53, 0.68, 1)
+theme_override_font_sizes/font_size = 19
+text = "Lives: ❤ ❤ ❤"
+horizontal_alignment = 1
+
+[node name="RoundLabel" type="Label" parent="HudPanel"]
+layout_mode = 0
+offset_left = 930.0
+offset_top = 12.0
+offset_right = 1185.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 19
+text = "Guest 0/10"
+horizontal_alignment = 2
+
+[node name="ReceptionPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 265.0
 offset_top = 175.0
-offset_right = 930.0
-offset_bottom = 235.0
-theme_override_colors/font_color = Color(0.78, 0.7, 0.92, 1)
+offset_right = 1015.0
+offset_bottom = 525.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("ReceptionStyle")
+
+[node name="GuestBadgeLabel" type="Label" parent="ReceptionPanel"]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 22.0
+offset_right = 715.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(1, 0.81, 0.35, 1)
 theme_override_font_sizes/font_size = 18
-text = "Choose the correct room."
+text = "NEW GUEST"
+horizontal_alignment = 1
+
+[node name="RequestLabel" type="Label" parent="ReceptionPanel"]
+layout_mode = 0
+offset_left = 45.0
+offset_top = 64.0
+offset_right = 705.0
+offset_bottom = 125.0
+theme_override_colors/font_color = Color(0.98, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "A ghost is approaching the reception desk..."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="GhostLabel" type="Label" parent="." unique_id=134849434]
+[node name="GhostLabel" type="Label" parent="ReceptionPanel"]
 layout_mode = 0
-offset_left = 470.0
-offset_top = 225.0
-offset_right = 710.0
-offset_bottom = 380.0
-theme_override_font_sizes/font_size = 76
+offset_left = 245.0
+offset_top = 122.0
+offset_right = 505.0
+offset_bottom = 245.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 72
 text = "👻"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RoomsLabel" type="Label" parent="." unique_id=1112307839]
+[node name="MessageLabel" type="Label" parent="ReceptionPanel"]
 layout_mode = 0
-offset_left = 365.0
-offset_top = 395.0
-offset_right = 815.0
-offset_bottom = 445.0
-theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 22
-text = "Choose a Room"
+offset_left = 40.0
+offset_top = 250.0
+offset_right = 710.0
+offset_bottom = 305.0
+theme_override_colors/font_color = Color(0.81, 0.74, 0.94, 1)
+theme_override_font_sizes/font_size = 18
+text = "Mood: Mysterious | Personality: Unknown"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="TimerBar" type="ProgressBar" parent="ReceptionPanel"]
+layout_mode = 0
+offset_left = 115.0
+offset_top = 312.0
+offset_right = 635.0
+offset_bottom = 334.0
+min_value = 0.0
+max_value = 8.0
+value = 8.0
+show_percentage = false
+
+[node name="RoomsLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 390.0
+offset_top = 535.0
+offset_right = 890.0
+offset_bottom = 578.0
+theme_override_colors/font_color = Color(0.97, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 21
+text = "Choose the perfect room"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ColdRoomButton" type="Button" parent="." unique_id=547457302]
+[node name="ColdRoomButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 150.0
-offset_top = 465.0
-offset_right = 410.0
-offset_bottom = 565.0
-theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+offset_left = 105.0
+offset_top = 590.0
+offset_right = 395.0
+offset_bottom = 690.0
+theme_override_colors/font_color = Color(0.94, 0.98, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "❄ Cold Room
+theme_override_styles/normal = SubResource("ColdNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "❄ COLD ROOM
 Quiet and chilly"
 
-[node name="DarkRoomButton" type="Button" parent="." unique_id=47682942]
+[node name="DarkRoomButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 460.0
-offset_top = 465.0
-offset_right = 720.0
-offset_bottom = 565.0
-theme_override_colors/font_color = Color(0.94, 0.9, 1, 1)
+offset_left = 495.0
+offset_top = 590.0
+offset_right = 785.0
+offset_bottom = 690.0
+theme_override_colors/font_color = Color(0.96, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "🌑 Dark Room
+theme_override_styles/normal = SubResource("DarkNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "🌑 DARK ROOM
 Dim and restful"
 
-[node name="MusicRoomButton" type="Button" parent="." unique_id=583671295]
+[node name="MusicRoomButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 770.0
-offset_top = 465.0
-offset_right = 1030.0
-offset_bottom = 565.0
-theme_override_colors/font_color = Color(1, 0.9, 0.97, 1)
+offset_left = 885.0
+offset_top = 590.0
+offset_right = 1175.0
+offset_bottom = 690.0
+theme_override_colors/font_color = Color(1, 0.93, 0.98, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "🎵 Music Room
+theme_override_styles/normal = SubResource("MusicNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "🎵 MUSIC ROOM
 Soft spooky tunes"
 
-[node name="RestartButton" type="Button" parent="." unique_id=1139767068]
+[node name="RestartButton" type="Button" parent="."]
+visible = false
 layout_mode = 0
-offset_left = 480.0
-offset_top = 580.0
-offset_right = 700.0
-offset_bottom = 635.0
+offset_left = 445.0
+offset_top = 590.0
+offset_right = 665.0
+offset_bottom = 650.0
 theme_override_font_sizes/font_size = 18
-text = "Play Again"
+theme_override_styles/normal = SubResource("SmallButton")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "PLAY AGAIN"
 
-[node name="StartButton" type="Button" parent="." unique_id=1069377547]
+[node name="MenuButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 460.0
-offset_top = 350.0
-offset_right = 720.0
-offset_bottom = 410.0
-theme_override_font_sizes/font_size = 21
-text = "ENTER HOTEL"
+offset_left = 1085.0
+offset_top = 20.0
+offset_right = 1250.0
+offset_bottom = 65.0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("SmallButton")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "MAIN MENU"
 
-[node name="GetReadyButton" type="Button" parent="." unique_id=80714400]
-layout_mode = 0
-offset_left = 460.0
-offset_top = 425.0
-offset_right = 720.0
-offset_bottom = 485.0
-theme_override_font_sizes/font_size = 19
-text = "BEGIN NIGHT"
+[node name="CorrectSound" type="AudioStreamPlayer2D" parent="."]
 
-[node name="QuitButton" type="Button" parent="." unique_id=1639693499]
-layout_mode = 0
-offset_left = 460.0
-offset_top = 500.0
-offset_right = 720.0
-offset_bottom = 555.0
-theme_override_font_sizes/font_size = 18
-text = "QUIT HOTEL"
+[node name="WrongSound" type="AudioStreamPlayer2D" parent="."]
 
-[node name="CorrectSound" type="AudioStreamPlayer2D" parent="." unique_id=1390700762]
-
-[node name="WrongSound" type="AudioStreamPlayer2D" parent="." unique_id=264803370]
-
-[node name="GameOverSound" type="AudioStreamPlayer2D" parent="." unique_id=1899946178]
+[node name="GameOverSound" type="AudioStreamPlayer2D" parent="."]
