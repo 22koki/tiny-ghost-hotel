@@ -1,7 +1,10 @@
 [gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://main.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/backgrounds/hauntedhotel.jpg" id="2_background"]
+
+[ext_resource type="Texture2D" path="res://assets/backgrounds/WhatsApp Image 2026-07-11 at 2.28.02 PM.jpeg" id="2_background"]
+
+
 
 [sub_resource type="StyleBoxFlat" id="HudStyle"]
 bg_color = Color(0.035, 0.012, 0.075, 0.88)
