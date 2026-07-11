@@ -2,21 +2,21 @@ extends Control
 
 
 # =========================================================
-# GAME SETTINGS
+# CONSTANTS
 # =========================================================
 
 const SAVE_PATH := "user://tiny_ghost_hotel_save.json"
 
 const STARTING_LIVES := 3
-const DEFAULT_MAX_ROUNDS := 10
-const DEFAULT_ROUND_TIME := 8.0
+const MAX_ROUNDS := 10
+const DEFAULT_PATIENCE := 8.0
 
-const CORRECT_DELAY := 1.2
-const WRONG_DELAY := 1.4
+const CORRECT_WAIT_TIME := 1.15
+const WRONG_WAIT_TIME := 1.35
 
 
 # =========================================================
-# GAME DATA
+# GAME STATE
 # =========================================================
 
 var score: int = 0
@@ -25,71 +25,82 @@ var lives: int = STARTING_LIVES
 var streak: int = 0
 var best_streak: int = 0
 
-var current_ghost: Dictionary = {}
 var current_round: int = 0
-var max_rounds: int = DEFAULT_MAX_ROUNDS
+var current_ghost: Dictionary = {}
+var ghost_pool: Array[Dictionary] = []
 
 var game_started: bool = false
 var round_active: bool = false
 var transition_running: bool = false
+var entering_hotel: bool = false
 
-var round_time: float = DEFAULT_ROUND_TIME
-var time_remaining: float = DEFAULT_ROUND_TIME
-
-var ghost_pool: Array = []
+var round_time: float = DEFAULT_PATIENCE
+var time_remaining: float = DEFAULT_PATIENCE
 
 var ghost_float_tween: Tween
-var ghost_entrance_tween: Tween
+var menu_ghost_tween: Tween
+var moon_tween: Tween
+var hotel_tween: Tween
+var title_tween: Tween
 
 
 # =========================================================
-# REQUIRED UI NODES
+# BACKGROUND AND DECORATION NODES
+# =========================================================
+
+@onready var night_background: ColorRect = $NightBackground
+@onready var hotel_background: TextureRect = $HotelBackground
+@onready var background_tint: ColorRect = $BackgroundTint
+
+@onready var moon_label: Label = $MoonLabel
+@onready var hotel_silhouette: Label = $HotelSilhouette
+@onready var floating_ghost: Label = $FloatingGhost
+
+
+# =========================================================
+# LABEL NODES
 # =========================================================
 
 @onready var title_label: Label = $TitleLabel
 @onready var subtitle_label: Label = $SubtitleLabel
-@onready var round_label: Label = $RoundLabel
+
 @onready var score_label: Label = $ScoreLabel
 @onready var lives_label: Label = $LivesLabel
+@onready var round_label: Label = $RoundLabel
+
 @onready var request_label: Label = $RequestLabel
 @onready var message_label: Label = $MessageLabel
 @onready var ghost_label: Label = $GhostLabel
 @onready var rooms_label: Label = $RoomsLabel
 
+
+# =========================================================
+# BUTTON NODES
+# =========================================================
+
 @onready var cold_button: Button = $ColdRoomButton
 @onready var dark_button: Button = $DarkRoomButton
 @onready var music_button: Button = $MusicRoomButton
+
 @onready var restart_button: Button = $RestartButton
-
-@onready var menu_panel: Control = $MenuPanel
 @onready var start_button: Button = $StartButton
-@onready var quit_button: Button = $QuitButton
 @onready var get_ready_button: Button = $GetReadyButton
+@onready var quit_button: Button = $QuitButton
 
-@onready var correct_sound: AudioStreamPlayer = $CorrectSound
-@onready var wrong_sound: AudioStreamPlayer = $WrongSound
-@onready var game_over_sound: AudioStreamPlayer = $GameOverSound
-
-
-# =========================================================
-# OPTIONAL NODES
-#
-# These will be used automatically if you add them later.
-# =========================================================
-
-@onready var timer_bar: ProgressBar = get_node_or_null("TimerBar") as ProgressBar
-@onready var high_score_label: Label = get_node_or_null("HighScoreLabel") as Label
-@onready var background_music: AudioStreamPlayer = (
-	get_node_or_null("BackgroundMusic") as AudioStreamPlayer
-)
-
-@onready var ghost_sprite: TextureRect = (
-	get_node_or_null("GhostSprite") as TextureRect
-)
+@onready var menu_panel: Panel = $MenuPanel
 
 
 # =========================================================
-# GHOST INFORMATION
+# AUDIO NODES
+# =========================================================
+
+@onready var correct_sound: AudioStreamPlayer2D = $CorrectSound
+@onready var wrong_sound: AudioStreamPlayer2D = $WrongSound
+@onready var game_over_sound: AudioStreamPlayer2D = $GameOverSound
+
+
+# =========================================================
+# GHOST DATA
 # =========================================================
 
 var ghosts: Array[Dictionary] = [
@@ -97,54 +108,99 @@ var ghosts: Array[Dictionary] = [
 		"name": "Frosty",
 		"preference": "cold",
 		"intro": "loves icy breezes",
+		"mood": "Shivering",
+		"personality": "Polite",
+		"patience": 9.0,
+		"base_points": 1,
+		"vip": false,
 		"icon": "❄️👻"
 	},
 	{
 		"name": "Shade",
 		"preference": "dark",
 		"intro": "hates bright lights",
+		"mood": "Nervous",
+		"personality": "Quiet",
+		"patience": 7.0,
+		"base_points": 1,
+		"vip": false,
 		"icon": "🌑👻"
 	},
 	{
 		"name": "Melody",
 		"preference": "music",
 		"intro": "sleeps to lullabies",
+		"mood": "Cheerful",
+		"personality": "Musical",
+		"patience": 8.0,
+		"base_points": 1,
+		"vip": false,
 		"icon": "🎵👻"
 	},
 	{
 		"name": "Echo",
 		"preference": "dark",
 		"intro": "whispers from the hallway",
+		"mood": "Mysterious",
+		"personality": "Secretive",
+		"patience": 7.0,
+		"base_points": 1,
+		"vip": false,
 		"icon": "🌘👻"
 	},
 	{
 		"name": "Misty",
 		"preference": "cold",
 		"intro": "drifts like winter fog",
+		"mood": "Sleepy",
+		"personality": "Gentle",
+		"patience": 10.0,
+		"base_points": 1,
+		"vip": false,
 		"icon": "🌨️👻"
 	},
 	{
 		"name": "Velvet",
 		"preference": "music",
-		"intro": "adores soft piano",
+		"intro": "adores soft piano music",
+		"mood": "Relaxed",
+		"personality": "Artistic",
+		"patience": 10.0,
+		"base_points": 1,
+		"vip": false,
 		"icon": "🎹👻"
 	},
 	{
-		"name": "Nocturne",
+		"name": "Lord Nocturne",
 		"preference": "dark",
-		"intro": "comes alive at midnight",
-		"icon": "🌙👻"
+		"intro": "demands complete darkness",
+		"mood": "Impatient",
+		"personality": "Royal",
+		"patience": 5.0,
+		"base_points": 2,
+		"vip": true,
+		"icon": "👑🌙👻"
 	},
 	{
-		"name": "Glimmer",
+		"name": "Lady Glimmer",
 		"preference": "cold",
-		"intro": "sparkles like frost",
-		"icon": "✨👻"
+		"intro": "sparkles like frozen starlight",
+		"mood": "Elegant",
+		"personality": "Royal",
+		"patience": 6.0,
+		"base_points": 2,
+		"vip": true,
+		"icon": "✨❄️👻"
 	},
 	{
 		"name": "Wisp",
 		"preference": "music",
 		"intro": "hums a floating tune",
+		"mood": "Playful",
+		"personality": "Curious",
+		"patience": 8.0,
+		"base_points": 1,
+		"vip": false,
 		"icon": "🎶👻"
 	}
 ]
@@ -160,15 +216,22 @@ func _ready() -> void:
 	load_high_score()
 	setup_mouse_filters()
 	setup_button_text()
-	connect_signals()
+	connect_buttons()
 	setup_button_animations()
-	setup_optional_nodes()
 
 	show_title_screen()
 
 
 func setup_mouse_filters() -> void:
-	# Prevent the panel from blocking buttons.
+	night_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hotel_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background_tint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	moon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hotel_silhouette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	floating_ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	menu_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	start_button.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -182,74 +245,28 @@ func setup_mouse_filters() -> void:
 
 
 func setup_button_text() -> void:
-	start_button.text = "Start Game"
-	get_ready_button.text = "Begin Night"
-	quit_button.text = "Quit"
-	restart_button.text = "Play Again"
+	start_button.text = "ENTER HOTEL"
+	get_ready_button.text = "BEGIN NIGHT"
+	quit_button.text = "QUIT HOTEL"
+	restart_button.text = "PLAY AGAIN"
 
-	cold_button.text = "❄ Cold Room"
-	dark_button.text = "🌑 Dark Room"
-	music_button.text = "🎵 Music Room"
-
-	rooms_label.text = "Choose a Room"
+	cold_button.text = "❄ Cold Room\nQuiet and chilly"
+	dark_button.text = "🌑 Dark Room\nDim and restful"
+	music_button.text = "🎵 Music Room\nSoft spooky tunes"
 
 
-func setup_optional_nodes() -> void:
-	if timer_bar:
-		timer_bar.min_value = 0.0
-		timer_bar.max_value = round_time
-		timer_bar.value = round_time
-		timer_bar.visible = false
+func connect_buttons() -> void:
+	connect_button(start_button, _on_start_button_pressed)
+	connect_button(get_ready_button, _on_get_ready_button_pressed)
+	connect_button(quit_button, _on_quit_button_pressed)
+	connect_button(restart_button, _on_restart_button_pressed)
 
-	if high_score_label:
-		update_high_score_label()
-
-	if background_music:
-		if not background_music.playing:
-			background_music.play()
+	connect_button(cold_button, _on_cold_room_pressed)
+	connect_button(dark_button, _on_dark_room_pressed)
+	connect_button(music_button, _on_music_room_pressed)
 
 
-func connect_signals() -> void:
-	connect_button_signal(
-		cold_button,
-		_on_cold_room_pressed
-	)
-
-	connect_button_signal(
-		dark_button,
-		_on_dark_room_pressed
-	)
-
-	connect_button_signal(
-		music_button,
-		_on_music_room_pressed
-	)
-
-	connect_button_signal(
-		restart_button,
-		_on_restart_button_pressed
-	)
-
-	connect_button_signal(
-		start_button,
-		_on_start_button_pressed
-	)
-
-	connect_button_signal(
-		quit_button,
-		_on_quit_button_pressed
-	)
-
-	connect_button_signal(
-		get_ready_button,
-		_on_get_ready_button_pressed
-	)
-
-
-func connect_button_signal(
-	button: Button,
-	callback: Callable
-) -> void:
+func connect_button(button: Button, callback: Callable) -> void:
 	if not button.pressed.is_connected(callback):
 		button.pressed.connect(callback)
 
@@ -266,8 +283,6 @@ func setup_button_animations() -> void:
 	]
 
 	for button in buttons:
-		button.pivot_offset = button.size / 2.0
-
 		if not button.mouse_entered.is_connected(
 			_on_button_mouse_entered.bind(button)
 		):
@@ -284,10 +299,13 @@ func setup_button_animations() -> void:
 
 
 # =========================================================
-# MAIN PROCESS — ROUND TIMER
+# PROCESS
 # =========================================================
 
 func _process(delta: float) -> void:
+	if not game_started:
+		return
+
 	if not round_active:
 		return
 
@@ -297,21 +315,13 @@ func _process(delta: float) -> void:
 	time_remaining -= delta
 	time_remaining = maxf(time_remaining, 0.0)
 
-	update_timer_display()
+	# Shows the remaining patience in the message.
+	if time_remaining <= 3.0:
+		message_label.text = "Hurry! %.1f seconds remaining!" % time_remaining
 
 	if time_remaining <= 0.0:
 		round_active = false
 		handle_timeout()
-
-
-func update_timer_display() -> void:
-	if timer_bar:
-		timer_bar.value = time_remaining
-
-		if time_remaining <= 2.5:
-			timer_bar.modulate = Color(1.0, 0.35, 0.35)
-		else:
-			timer_bar.modulate = Color.WHITE
 
 
 # =========================================================
@@ -322,27 +332,37 @@ func show_title_screen() -> void:
 	game_started = false
 	round_active = false
 	transition_running = false
+	entering_hotel = false
 
-	stop_ghost_animation()
+	stop_game_ghost_animation()
+	reset_title_screen_transforms()
 
-	title_label.text = "Tiny Ghost Hotel"
-	subtitle_label.text = "Welcome to the spookiest hotel in town!"
+	night_background.visible = true
+	hotel_background.visible = true
+	background_tint.visible = true
+
+	moon_label.visible = true
+	hotel_silhouette.visible = true
+	floating_ghost.visible = true
 
 	title_label.visible = true
-	subtitle_label.visible = true
+	title_label.text = "TINY GHOST HOTEL"
 
-	request_label.text = ""
-	message_label.text = ""
-	ghost_label.text = "👻"
+	subtitle_label.visible = true
+	subtitle_label.text = (
+		"The night shift is about to begin...\n"
+		+ "High Score: %d"
+	) % high_score
 
 	menu_panel.visible = true
 	start_button.visible = true
 	get_ready_button.visible = false
 	quit_button.visible = true
 
-	round_label.visible = false
 	score_label.visible = false
 	lives_label.visible = false
+	round_label.visible = false
+
 	request_label.visible = false
 	message_label.visible = false
 	ghost_label.visible = false
@@ -353,55 +373,338 @@ func show_title_screen() -> void:
 	music_button.visible = false
 	restart_button.visible = false
 
-	if timer_bar:
-		timer_bar.visible = false
+	start_button.disabled = false
+	quit_button.disabled = false
 
-	if high_score_label:
-		high_score_label.visible = true
-		update_high_score_label()
-
-	animate_title_screen()
+	start_haunted_menu_animations()
 
 
-func animate_title_screen() -> void:
+func reset_title_screen_transforms() -> void:
+	hotel_background.scale = Vector2.ONE
+	hotel_silhouette.scale = Vector2.ONE
+	floating_ghost.scale = Vector2.ONE
+	floating_ghost.rotation = 0.0
+	moon_label.scale = Vector2.ONE
+
+	title_label.modulate = Color.WHITE
+	subtitle_label.modulate = Color.WHITE
+	menu_panel.modulate = Color.WHITE
+	start_button.modulate = Color.WHITE
+	quit_button.modulate = Color.WHITE
+	floating_ghost.modulate = Color.WHITE
+	hotel_silhouette.modulate = Color(0.5, 0.4, 0.8, 0.55)
+	background_tint.modulate = Color.WHITE
+
+
+func start_haunted_menu_animations() -> void:
+	stop_menu_animations()
+
+	animate_menu_ghost()
+	animate_moon()
+	animate_hotel()
+	animate_title_entrance()
+
+
+func animate_menu_ghost() -> void:
+	await get_tree().process_frame
+
+	if not floating_ghost.visible:
+		return
+
+	floating_ghost.pivot_offset = floating_ghost.size / 2.0
+	var original_y := floating_ghost.position.y
+
+	menu_ghost_tween = create_tween()
+	menu_ghost_tween.set_loops()
+
+	menu_ghost_tween.tween_property(
+		floating_ghost,
+		"position:y",
+		original_y - 22.0,
+		1.4
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	menu_ghost_tween.parallel().tween_property(
+		floating_ghost,
+		"rotation",
+		deg_to_rad(-5.0),
+		1.4
+	)
+
+	menu_ghost_tween.tween_property(
+		floating_ghost,
+		"position:y",
+		original_y + 22.0,
+		1.4
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	menu_ghost_tween.parallel().tween_property(
+		floating_ghost,
+		"rotation",
+		deg_to_rad(5.0),
+		1.4
+	)
+
+
+func animate_moon() -> void:
+	await get_tree().process_frame
+
+	moon_label.pivot_offset = moon_label.size / 2.0
+
+	moon_tween = create_tween()
+	moon_tween.set_loops()
+
+	moon_tween.tween_property(
+		moon_label,
+		"scale",
+		Vector2(1.08, 1.08),
+		1.8
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	moon_tween.parallel().tween_property(
+		moon_label,
+		"modulate:a",
+		0.72,
+		1.8
+	)
+
+	moon_tween.tween_property(
+		moon_label,
+		"scale",
+		Vector2.ONE,
+		1.8
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	moon_tween.parallel().tween_property(
+		moon_label,
+		"modulate:a",
+		1.0,
+		1.8
+	)
+
+
+func animate_hotel() -> void:
+	await get_tree().process_frame
+
+	hotel_silhouette.pivot_offset = hotel_silhouette.size / 2.0
+
+	hotel_tween = create_tween()
+	hotel_tween.set_loops()
+
+	hotel_tween.tween_property(
+		hotel_silhouette,
+		"modulate:a",
+		0.78,
+		1.5
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	hotel_tween.parallel().tween_property(
+		hotel_silhouette,
+		"scale",
+		Vector2(1.025, 1.025),
+		1.5
+	)
+
+	hotel_tween.tween_property(
+		hotel_silhouette,
+		"modulate:a",
+		0.48,
+		1.5
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	hotel_tween.parallel().tween_property(
+		hotel_silhouette,
+		"scale",
+		Vector2.ONE,
+		1.5
+	)
+
+
+func animate_title_entrance() -> void:
 	title_label.modulate.a = 0.0
 	subtitle_label.modulate.a = 0.0
 	menu_panel.modulate.a = 0.0
 
-	title_label.scale = Vector2(0.8, 0.8)
+	title_label.scale = Vector2(0.75, 0.75)
+
+	await get_tree().process_frame
 	title_label.pivot_offset = title_label.size / 2.0
 
-	var tween := create_tween()
+	title_tween = create_tween()
+	title_tween.set_parallel(true)
 
-	tween.set_parallel(true)
-
-	tween.tween_property(
+	title_tween.tween_property(
 		title_label,
 		"modulate:a",
 		1.0,
-		0.6
+		0.7
 	)
 
-	tween.tween_property(
+	title_tween.tween_property(
 		title_label,
 		"scale",
 		Vector2.ONE,
-		0.6
+		0.7
 	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
-	tween.tween_property(
+	title_tween.tween_property(
 		subtitle_label,
 		"modulate:a",
 		1.0,
-		0.8
+		0.9
 	)
 
-	tween.tween_property(
+	title_tween.tween_property(
 		menu_panel,
 		"modulate:a",
 		1.0,
+		0.9
+	)
+
+
+func stop_menu_animations() -> void:
+	if menu_ghost_tween:
+		menu_ghost_tween.kill()
+		menu_ghost_tween = null
+
+	if moon_tween:
+		moon_tween.kill()
+		moon_tween = null
+
+	if hotel_tween:
+		hotel_tween.kill()
+		hotel_tween = null
+
+	if title_tween:
+		title_tween.kill()
+		title_tween = null
+
+
+# =========================================================
+# ENTER-HOTEL TRANSITION
+# =========================================================
+
+func enter_hotel_animation() -> void:
+	if entering_hotel:
+		return
+
+	entering_hotel = true
+	transition_running = true
+
+	start_button.disabled = true
+	quit_button.disabled = true
+
+	stop_menu_animations()
+
+	var fade_tween := create_tween()
+	fade_tween.set_parallel(true)
+
+	fade_tween.tween_property(
+		title_label,
+		"modulate:a",
+		0.0,
+		0.4
+	)
+
+	fade_tween.tween_property(
+		subtitle_label,
+		"modulate:a",
+		0.0,
+		0.4
+	)
+
+	fade_tween.tween_property(
+		menu_panel,
+		"modulate:a",
+		0.0,
+		0.4
+	)
+
+	fade_tween.tween_property(
+		start_button,
+		"modulate:a",
+		0.0,
+		0.4
+	)
+
+	fade_tween.tween_property(
+		quit_button,
+		"modulate:a",
+		0.0,
+		0.4
+	)
+
+	fade_tween.tween_property(
+		floating_ghost,
+		"modulate:a",
+		0.0,
+		0.4
+	)
+
+	await fade_tween.finished
+
+	await get_tree().process_frame
+
+	hotel_silhouette.pivot_offset = hotel_silhouette.size / 2.0
+	hotel_background.pivot_offset = hotel_background.size / 2.0
+
+	var zoom_tween := create_tween()
+	zoom_tween.set_parallel(true)
+
+	zoom_tween.tween_property(
+		hotel_silhouette,
+		"scale",
+		Vector2(2.25, 2.25),
+		1.25
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	zoom_tween.tween_property(
+		hotel_background,
+		"scale",
+		Vector2(1.35, 1.35),
+		1.25
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	zoom_tween.tween_property(
+		moon_label,
+		"modulate:a",
+		0.0,
 		0.8
 	)
+
+	zoom_tween.tween_property(
+		background_tint,
+		"modulate",
+		Color(0.05, 0.01, 0.08, 1.0),
+		1.25
+	)
+
+	await zoom_tween.finished
+
+	await flash_transition()
+
+	show_ready_screen()
+
+	entering_hotel = false
+	transition_running = false
+
+
+func flash_transition() -> void:
+	background_tint.color = Color(0.0, 0.0, 0.0, 1.0)
+	background_tint.modulate.a = 0.0
+
+	var tween := create_tween()
+
+	tween.tween_property(
+		background_tint,
+		"modulate:a",
+		1.0,
+		0.3
+	)
+
+	await tween.finished
+
+	await get_tree().create_timer(0.15).timeout
 
 
 # =========================================================
@@ -409,43 +712,66 @@ func animate_title_screen() -> void:
 # =========================================================
 
 func show_ready_screen() -> void:
-	game_started = false
-	round_active = false
+	stop_menu_animations()
 
-	title_label.text = "Tiny Ghost Hotel"
+	hotel_background.visible = true
+	night_background.visible = true
+	background_tint.visible = true
+
+	moon_label.visible = false
+	hotel_silhouette.visible = false
+	floating_ghost.visible = false
+
+	title_label.visible = true
+	title_label.text = "WELCOME TO THE LOBBY"
+	title_label.modulate = Color.WHITE
+	title_label.scale = Vector2.ONE
+
 	subtitle_label.visible = true
-	subtitle_label.text = "Prepare for the Night Shift"
+	subtitle_label.text = "Your first guests are waiting..."
+	subtitle_label.modulate = Color.WHITE
 
 	menu_panel.visible = true
+	menu_panel.modulate = Color.WHITE
+
 	start_button.visible = false
 	get_ready_button.visible = true
 	quit_button.visible = true
 
-	round_label.visible = false
+	get_ready_button.modulate = Color.WHITE
+	quit_button.modulate = Color.WHITE
+	get_ready_button.disabled = false
+	quit_button.disabled = false
+
 	score_label.visible = false
 	lives_label.visible = false
+	round_label.visible = false
 
 	request_label.visible = true
-	request_label.text = "How to Play"
+	request_label.text = "HOW TO PLAY"
 
 	message_label.visible = true
 	message_label.text = (
-		"Match each ghost to its favourite room.\n"
-		+ "A wrong choice costs one life.\n"
-		+ "Answer quickly and build streaks for bonus points."
+		"Read each ghost's request.\n"
+		+ "Choose the Cold, Dark or Music room.\n"
+		+ "Wrong answers cost one life.\n"
+		+ "VIP guests give bonus points."
 	)
 
 	ghost_label.visible = true
 	ghost_label.text = "🛎️ 👻"
+	ghost_label.modulate = Color.WHITE
+	ghost_label.scale = Vector2.ONE
 
 	rooms_label.visible = false
+
 	cold_button.visible = false
 	dark_button.visible = false
 	music_button.visible = false
 	restart_button.visible = false
 
-	if timer_bar:
-		timer_bar.visible = false
+	background_tint.color = Color(0.08, 0.025, 0.18, 0.5)
+	background_tint.modulate = Color.WHITE
 
 	animate_ready_screen()
 
@@ -454,8 +780,9 @@ func animate_ready_screen() -> void:
 	request_label.modulate.a = 0.0
 	message_label.modulate.a = 0.0
 	ghost_label.modulate.a = 0.0
+	ghost_label.scale = Vector2(0.4, 0.4)
 
-	ghost_label.scale = Vector2(0.5, 0.5)
+	await get_tree().process_frame
 	ghost_label.pivot_offset = ghost_label.size / 2.0
 
 	var tween := create_tween()
@@ -465,11 +792,18 @@ func animate_ready_screen() -> void:
 		request_label,
 		"modulate:a",
 		1.0,
-		0.4
+		0.5
 	)
 
 	tween.tween_property(
 		message_label,
+		"modulate:a",
+		1.0,
+		0.7
+	)
+
+	tween.tween_property(
+		ghost_label,
 		"modulate:a",
 		1.0,
 		0.6
@@ -477,57 +811,14 @@ func animate_ready_screen() -> void:
 
 	tween.tween_property(
 		ghost_label,
-		"modulate:a",
-		1.0,
-		0.5
-	)
-
-	tween.tween_property(
-		ghost_label,
 		"scale",
 		Vector2.ONE,
-		0.5
+		0.6
 	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 # =========================================================
-# GAME UI
-# =========================================================
-
-func show_game_ui() -> void:
-	menu_panel.visible = false
-
-	title_label.visible = true
-	subtitle_label.visible = false
-
-	round_label.visible = true
-	score_label.visible = true
-	lives_label.visible = true
-	request_label.visible = true
-	message_label.visible = true
-	ghost_label.visible = true
-	rooms_label.visible = true
-
-	cold_button.visible = true
-	dark_button.visible = true
-	music_button.visible = true
-	restart_button.visible = false
-
-	if timer_bar:
-		timer_bar.visible = true
-
-	if high_score_label:
-		high_score_label.visible = true
-
-
-func set_room_buttons_disabled(disabled: bool) -> void:
-	cold_button.disabled = disabled
-	dark_button.disabled = disabled
-	music_button.disabled = disabled
-
-
-# =========================================================
-# GAME START AND RESET
+# GAME SETUP
 # =========================================================
 
 func reset_game_data() -> void:
@@ -539,9 +830,6 @@ func reset_game_data() -> void:
 	current_round = 0
 	current_ghost = {}
 
-	round_time = DEFAULT_ROUND_TIME
-	time_remaining = round_time
-
 	ghost_pool = ghosts.duplicate(true)
 	ghost_pool.shuffle()
 
@@ -550,32 +838,66 @@ func reset_game_data() -> void:
 
 
 func start_game() -> void:
-	game_started = true
-
 	reset_game_data()
+
+	game_started = true
+	round_active = false
+
 	show_game_ui()
 
-	title_label.text = "Tiny Ghost Hotel"
-
-	update_round_label()
 	update_score_label()
 	update_lives_label()
-	update_high_score_label()
-
-	request_label.text = "A ghost is approaching the lobby..."
-	message_label.text = "Choose the room that matches its request."
-	ghost_label.text = "👻"
-	rooms_label.text = "Choose a Room"
-
-	set_room_buttons_disabled(false)
-	restart_button.visible = false
+	update_round_label()
 
 	spawn_new_ghost()
+
+
+func show_game_ui() -> void:
+	stop_menu_animations()
+
+	moon_label.visible = false
+	hotel_silhouette.visible = false
+	floating_ghost.visible = false
+
+	menu_panel.visible = false
+	start_button.visible = false
+	get_ready_button.visible = false
+	quit_button.visible = false
+
+	title_label.visible = true
+	title_label.text = "TINY GHOST HOTEL"
+
+	subtitle_label.visible = false
+
+	score_label.visible = true
+	lives_label.visible = true
+	round_label.visible = true
+
+	request_label.visible = true
+	message_label.visible = true
+	ghost_label.visible = true
+	rooms_label.visible = true
+
+	cold_button.visible = true
+	dark_button.visible = true
+	music_button.visible = true
+
+	restart_button.visible = false
+
+	background_tint.color = Color(0.04, 0.01, 0.1, 0.35)
+	background_tint.modulate = Color.WHITE
 
 
 # =========================================================
 # HUD UPDATES
 # =========================================================
+
+func update_score_label() -> void:
+	score_label.text = "Score: %d | Streak: %d" % [
+		score,
+		streak
+	]
+
 
 func update_lives_label() -> void:
 	var hearts := ""
@@ -589,27 +911,15 @@ func update_lives_label() -> void:
 	lives_label.text = "Lives: %s" % hearts.strip_edges()
 
 
-func update_score_label() -> void:
-	score_label.text = "Score: %d  |  Streak: %d" % [
-		score,
-		streak
-	]
-
-
 func update_round_label() -> void:
-	round_label.text = "Guest %d / %d" % [
+	round_label.text = "Round %d/%d" % [
 		current_round,
-		max_rounds
+		MAX_ROUNDS
 	]
-
-
-func update_high_score_label() -> void:
-	if high_score_label:
-		high_score_label.text = "High Score: %d" % high_score
 
 
 # =========================================================
-# GHOST MANAGEMENT
+# GHOST SPAWNING
 # =========================================================
 
 func refill_ghost_pool_if_needed() -> void:
@@ -623,7 +933,7 @@ func spawn_new_ghost() -> void:
 		end_game_lost()
 		return
 
-	if current_round >= max_rounds:
+	if current_round >= MAX_ROUNDS:
 		end_game_won()
 		return
 
@@ -634,138 +944,175 @@ func spawn_new_ghost() -> void:
 
 	update_round_label()
 
-	var ghost_name: String = current_ghost.get(
-		"name",
-		"Unknown Ghost"
+	var ghost_name := str(
+		current_ghost.get("name", "Unknown Ghost")
 	)
 
-	var ghost_intro: String = current_ghost.get(
-		"intro",
-		"floats silently"
+	var ghost_intro := str(
+		current_ghost.get("intro", "floats silently")
 	)
 
-	request_label.text = "%s arrives and %s." % [
-		ghost_name,
-		ghost_intro
+	var mood := str(
+		current_ghost.get("mood", "Mysterious")
+	)
+
+	var personality := str(
+		current_ghost.get("personality", "Unknown")
+	)
+
+	var is_vip := bool(
+		current_ghost.get("vip", false)
+	)
+
+	if is_vip:
+		request_label.text = (
+			"★ VIP GUEST ★\n"
+			+ "%s arrives and %s."
+		) % [ghost_name, ghost_intro]
+	else:
+		request_label.text = "%s arrives and %s." % [
+			ghost_name,
+			ghost_intro
+		]
+
+	message_label.text = "Mood: %s | Personality: %s" % [
+		mood,
+		personality
 	]
 
-	message_label.text = "Where should this ghost stay?"
-	ghost_label.text = get_ghost_icon(current_ghost)
+	ghost_label.text = str(
+		current_ghost.get("icon", "👻")
+	)
+
+	rooms_label.text = "Choose the Best Room"
+
+	round_time = float(
+		current_ghost.get(
+			"patience",
+			DEFAULT_PATIENCE
+		)
+	)
 
 	time_remaining = round_time
 
-	if timer_bar:
-		timer_bar.max_value = round_time
-		timer_bar.value = round_time
-		timer_bar.modulate = Color.WHITE
-
 	set_room_buttons_disabled(false)
-	round_active = true
+
 	transition_running = false
+	round_active = true
 
-	animate_ghost_entrance()
-
-
-func get_ghost_icon(ghost_data: Dictionary) -> String:
-	if ghost_data.has("icon"):
-		return str(ghost_data["icon"])
-
-	var preference: String = str(
-		ghost_data.get("preference", "")
-	)
-
-	match preference:
-		"cold":
-			return "❄️👻"
-		"dark":
-			return "🌑👻"
-		"music":
-			return "🎵👻"
-		_:
-			return "👻"
+	animate_game_ghost_entrance()
 
 
 # =========================================================
-# GHOST ANIMATION
+# GAME GHOST ANIMATION
 # =========================================================
 
-func animate_ghost_entrance() -> void:
-	stop_ghost_animation()
+func animate_game_ghost_entrance() -> void:
+	stop_game_ghost_animation()
+
+	ghost_label.visible = true
+	ghost_label.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	ghost_label.scale = Vector2(0.15, 0.15)
+	ghost_label.rotation = deg_to_rad(-10.0)
+
+	await get_tree().process_frame
 
 	ghost_label.pivot_offset = ghost_label.size / 2.0
-	ghost_label.modulate = Color(1, 1, 1, 0)
-	ghost_label.scale = Vector2(0.3, 0.3)
 
-	var original_position := ghost_label.position
-	ghost_label.position.y = original_position.y - 45.0
+	var entrance_tween := create_tween()
+	entrance_tween.set_parallel(true)
 
-	ghost_entrance_tween = create_tween()
-	ghost_entrance_tween.set_parallel(true)
-
-	ghost_entrance_tween.tween_property(
+	entrance_tween.tween_property(
 		ghost_label,
 		"modulate:a",
 		1.0,
-		0.45
+		0.55
 	)
 
-	ghost_entrance_tween.tween_property(
+	entrance_tween.tween_property(
 		ghost_label,
 		"scale",
-		Vector2.ONE,
+		Vector2(1.18, 1.18),
 		0.55
 	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
-	ghost_entrance_tween.tween_property(
+	entrance_tween.tween_property(
 		ghost_label,
-		"position",
-		original_position,
+		"rotation",
+		0.0,
 		0.55
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
-	await ghost_entrance_tween.finished
+	await entrance_tween.finished
+
+	var settle_tween := create_tween()
+
+	settle_tween.tween_property(
+		ghost_label,
+		"scale",
+		Vector2.ONE,
+		0.18
+	)
+
+	await settle_tween.finished
 
 	if round_active:
-		start_ghost_float()
+		start_game_ghost_float()
 
 
-func start_ghost_float() -> void:
+func start_game_ghost_float() -> void:
 	if ghost_float_tween:
 		ghost_float_tween.kill()
-
-	var starting_y := ghost_label.position.y
 
 	ghost_float_tween = create_tween()
 	ghost_float_tween.set_loops()
 
 	ghost_float_tween.tween_property(
 		ghost_label,
-		"position:y",
-		starting_y - 10.0,
-		0.9
+		"rotation",
+		deg_to_rad(-4.0),
+		0.85
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	ghost_float_tween.parallel().tween_property(
+		ghost_label,
+		"scale",
+		Vector2(1.06, 1.06),
+		0.85
+	)
 
 	ghost_float_tween.tween_property(
 		ghost_label,
-		"position:y",
-		starting_y + 10.0,
-		0.9
+		"rotation",
+		deg_to_rad(4.0),
+		0.85
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
+	ghost_float_tween.parallel().tween_property(
+		ghost_label,
+		"scale",
+		Vector2(0.96, 0.96),
+		0.85
+	)
 
-func stop_ghost_animation() -> void:
+
+func stop_game_ghost_animation() -> void:
 	if ghost_float_tween:
 		ghost_float_tween.kill()
 		ghost_float_tween = null
 
-	if ghost_entrance_tween:
-		ghost_entrance_tween.kill()
-		ghost_entrance_tween = null
+	ghost_label.rotation = 0.0
 
 
 # =========================================================
 # ROOM SELECTION
 # =========================================================
+
+func set_room_buttons_disabled(disabled: bool) -> void:
+	cold_button.disabled = disabled
+	dark_button.disabled = disabled
+	music_button.disabled = disabled
+
 
 func check_room(selected_room: String) -> void:
 	if not game_started:
@@ -784,9 +1131,9 @@ func check_room(selected_room: String) -> void:
 	transition_running = true
 
 	set_room_buttons_disabled(true)
-	stop_ghost_animation()
+	stop_game_ghost_animation()
 
-	var correct_room: String = str(
+	var correct_room := str(
 		current_ghost.get("preference", "")
 	)
 
@@ -799,7 +1146,7 @@ func check_room(selected_room: String) -> void:
 		end_game_lost()
 		return
 
-	if current_round >= max_rounds:
+	if current_round >= MAX_ROUNDS:
 		end_game_won()
 		return
 
@@ -815,32 +1162,35 @@ func handle_correct_answer() -> void:
 
 	update_score_label()
 
-	if correct_sound:
+	if correct_sound.stream:
 		correct_sound.play()
 
-	var ghost_name: String = str(
+	var ghost_name := str(
 		current_ghost.get("name", "The ghost")
 	)
 
-	message_label.text = "%s is delighted! %s  +%d points" % [
+	message_label.text = "%s is delighted! %s +%d points" % [
 		ghost_name,
 		get_success_message(),
 		gained_score
 	]
 
 	await animate_correct_answer()
-	await get_tree().create_timer(CORRECT_DELAY).timeout
+	await get_tree().create_timer(CORRECT_WAIT_TIME).timeout
 
 
 func calculate_score_gain() -> int:
-	var gained_score := 1
+	var gained_score := int(
+		current_ghost.get("base_points", 1)
+	)
 
 	if streak >= 3:
-		gained_score = 2
+		gained_score += 1
 
 	if streak >= 5:
-		gained_score = 3
+		gained_score += 1
 
+	# Fast-answer bonus.
 	if time_remaining >= round_time * 0.70:
 		gained_score += 1
 
@@ -848,21 +1198,14 @@ func calculate_score_gain() -> int:
 
 
 func animate_correct_answer() -> void:
-	ghost_label.modulate = Color(
-		0.6,
-		1.0,
-		0.75,
-		1.0
-	)
-
-	ghost_label.pivot_offset = ghost_label.size / 2.0
+	ghost_label.modulate = Color(0.55, 1.0, 0.72, 1.0)
 
 	var tween := create_tween()
 
 	tween.tween_property(
 		ghost_label,
 		"scale",
-		Vector2(1.25, 1.25),
+		Vector2(1.28, 1.28),
 		0.18
 	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
@@ -883,49 +1226,40 @@ func handle_wrong_answer() -> void:
 	update_lives_label()
 	update_score_label()
 
-	if wrong_sound:
+	if wrong_sound.stream:
 		wrong_sound.play()
 
-	var ghost_name: String = str(
+	var ghost_name := str(
 		current_ghost.get("name", "The ghost")
 	)
 
 	if lives > 0:
 		message_label.text = get_failure_message(ghost_name)
 	else:
-		message_label.text = (
-			"%s is furious! The hotel has no lives left."
-			% ghost_name
-		)
+		message_label.text = "%s is furious! No lives remain." % ghost_name
 
 	await animate_wrong_answer()
-	await get_tree().create_timer(WRONG_DELAY).timeout
+	await get_tree().create_timer(WRONG_WAIT_TIME).timeout
 
 
 func animate_wrong_answer() -> void:
-	ghost_label.modulate = Color(
-		1.0,
-		0.45,
-		0.45,
-		1.0
-	)
+	ghost_label.modulate = Color(1.0, 0.38, 0.45, 1.0)
 
 	var original_position := ghost_label.position
-
 	var tween := create_tween()
 
 	for i in range(3):
 		tween.tween_property(
 			ghost_label,
 			"position:x",
-			original_position.x - 12.0,
+			original_position.x - 14.0,
 			0.06
 		)
 
 		tween.tween_property(
 			ghost_label,
 			"position:x",
-			original_position.x + 12.0,
+			original_position.x + 14.0,
 			0.06
 		)
 
@@ -949,7 +1283,7 @@ func handle_timeout() -> void:
 
 	transition_running = true
 	set_room_buttons_disabled(true)
-	stop_ghost_animation()
+	stop_game_ghost_animation()
 
 	lives -= 1
 	streak = 0
@@ -957,7 +1291,7 @@ func handle_timeout() -> void:
 	update_lives_label()
 	update_score_label()
 
-	var ghost_name: String = str(
+	var ghost_name := str(
 		current_ghost.get("name", "The ghost")
 	)
 
@@ -966,17 +1300,17 @@ func handle_timeout() -> void:
 		% ghost_name
 	)
 
-	if wrong_sound:
+	if wrong_sound.stream:
 		wrong_sound.play()
 
 	await animate_wrong_answer()
-	await get_tree().create_timer(WRONG_DELAY).timeout
+	await get_tree().create_timer(WRONG_WAIT_TIME).timeout
 
 	if lives <= 0:
 		end_game_lost()
 		return
 
-	if current_round >= max_rounds:
+	if current_round >= MAX_ROUNDS:
 		end_game_won()
 		return
 
@@ -1006,7 +1340,7 @@ func get_failure_message(ghost_name: String) -> String:
 		"%s is upset! You lost one life.",
 		"%s rattled the windows in disappointment!",
 		"%s drifted away grumbling about the room!",
-		"%s left the hotel a frightening review!",
+		"%s left the hotel a terrifying review!",
 		"%s vanished through the wall in frustration!"
 	]
 
@@ -1038,12 +1372,11 @@ func end_game_won() -> void:
 	round_active = false
 	transition_running = false
 
-	stop_ghost_animation()
+	stop_game_ghost_animation()
 	set_room_buttons_disabled(true)
-
 	update_high_score()
 
-	title_label.text = "Night Shift Complete!"
+	title_label.text = "NIGHT SHIFT COMPLETE!"
 	round_label.text = "Hotel Closed"
 
 	request_label.text = "Every ghost received a room."
@@ -1060,6 +1393,8 @@ func end_game_won() -> void:
 
 	ghost_label.text = "✨👻✨"
 	ghost_label.modulate = Color.WHITE
+	ghost_label.scale = Vector2.ONE
+
 	rooms_label.text = "A Successful Night"
 
 	cold_button.visible = false
@@ -1067,10 +1402,6 @@ func end_game_won() -> void:
 	music_button.visible = false
 
 	restart_button.visible = true
-
-	if timer_bar:
-		timer_bar.visible = false
-
 	animate_end_screen()
 
 
@@ -1079,12 +1410,11 @@ func end_game_lost() -> void:
 	round_active = false
 	transition_running = false
 
-	stop_ghost_animation()
+	stop_game_ghost_animation()
 	set_room_buttons_disabled(true)
-
 	update_high_score()
 
-	title_label.text = "Game Over"
+	title_label.text = "GAME OVER"
 	round_label.text = "Hotel Closed"
 
 	request_label.text = "The ghosts have taken over the lobby."
@@ -1101,6 +1431,8 @@ func end_game_lost() -> void:
 
 	ghost_label.text = "😵👻"
 	ghost_label.modulate = Color.WHITE
+	ghost_label.scale = Vector2.ONE
+
 	rooms_label.text = "The Night Is Over"
 
 	cold_button.visible = false
@@ -1109,10 +1441,7 @@ func end_game_lost() -> void:
 
 	restart_button.visible = true
 
-	if timer_bar:
-		timer_bar.visible = false
-
-	if game_over_sound:
+	if game_over_sound.stream:
 		game_over_sound.play()
 
 	animate_end_screen()
@@ -1121,8 +1450,9 @@ func end_game_lost() -> void:
 func animate_end_screen() -> void:
 	restart_button.modulate.a = 0.0
 	message_label.modulate.a = 0.0
+	ghost_label.scale = Vector2(0.4, 0.4)
 
-	ghost_label.scale = Vector2(0.5, 0.5)
+	await get_tree().process_frame
 	ghost_label.pivot_offset = ghost_label.size / 2.0
 
 	var tween := create_tween()
@@ -1132,14 +1462,14 @@ func animate_end_screen() -> void:
 		ghost_label,
 		"scale",
 		Vector2.ONE,
-		0.5
+		0.55
 	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 	tween.tween_property(
 		message_label,
 		"modulate:a",
 		1.0,
-		0.6
+		0.65
 	)
 
 	tween.tween_property(
@@ -1151,15 +1481,13 @@ func animate_end_screen() -> void:
 
 
 # =========================================================
-# HIGH-SCORE SAVING
+# HIGH SCORE
 # =========================================================
 
 func update_high_score() -> void:
 	if score > high_score:
 		high_score = score
 		save_high_score()
-
-	update_high_score_label()
 
 
 func save_high_score() -> void:
@@ -1169,16 +1497,14 @@ func save_high_score() -> void:
 	)
 
 	if file == null:
-		push_warning("Could not save the high score.")
+		push_warning("Unable to save high score.")
 		return
 
 	var data := {
 		"high_score": high_score
 	}
 
-	file.store_string(
-		JSON.stringify(data)
-	)
+	file.store_string(JSON.stringify(data))
 
 
 func load_high_score() -> void:
@@ -1195,8 +1521,9 @@ func load_high_score() -> void:
 		high_score = 0
 		return
 
-	var json_text := file.get_as_text()
-	var parsed_data = JSON.parse_string(json_text)
+	var parsed_data = JSON.parse_string(
+		file.get_as_text()
+	)
 
 	if typeof(parsed_data) == TYPE_DICTIONARY:
 		high_score = int(
@@ -1214,6 +1541,7 @@ func _on_button_mouse_entered(button: Button) -> void:
 	if button.disabled:
 		return
 
+	await get_tree().process_frame
 	button.pivot_offset = button.size / 2.0
 
 	var tween := create_tween()
@@ -1254,6 +1582,7 @@ func _on_button_mouse_exited(button: Button) -> void:
 
 
 func animate_button_press(button: Button) -> void:
+	await get_tree().process_frame
 	button.pivot_offset = button.size / 2.0
 
 	var tween := create_tween()
@@ -1278,8 +1607,11 @@ func animate_button_press(button: Button) -> void:
 # =========================================================
 
 func _on_start_button_pressed() -> void:
+	if entering_hotel:
+		return
+
 	animate_button_press(start_button)
-	show_ready_screen()
+	await enter_hotel_animation()
 
 
 func _on_get_ready_button_pressed() -> void:
