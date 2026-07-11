@@ -1,0 +1,340 @@
+[gd_scene format=3 uid="uid://c3d4gc3h1e8te"]
+
+[ext_resource type="Script" uid="uid://cqmxw4hnijgho" path="res://main.gd" id="1_ig7tw"]
+
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ig7tw")
+
+
+; =========================================================
+; BACKGROUND LAYERS
+; =========================================================
+
+[node name="NightBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.035, 0.018, 0.11, 1)
+
+
+[node name="HotelBackground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+
+[node name="BackgroundTint" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.025, 0.18, 0.5)
+
+
+[node name="World" type="Node2D" parent="."]
+
+
+; =========================================================
+; TITLE-SCREEN DECORATIONS
+; =========================================================
+
+[node name="MoonLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 910.0
+offset_top = 50.0
+offset_right = 1070.0
+offset_bottom = 190.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.93, 0.9, 0.67, 0.8)
+theme_override_font_sizes/font_size = 90
+text = "🌕"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+
+[node name="HotelSilhouette" type="Label" parent="."]
+layout_mode = 0
+offset_left = 55.0
+offset_top = 285.0
+offset_right = 415.0
+offset_bottom = 625.0
+mouse_filter = 2
+modulate = Color(0.5, 0.4, 0.8, 0.55)
+theme_override_font_sizes/font_size = 190
+text = "🏨"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+
+[node name="FloatingGhost" type="Label" parent="."]
+layout_mode = 0
+offset_left = 850.0
+offset_top = 275.0
+offset_right = 1020.0
+offset_bottom = 430.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 82
+text = "👻"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+
+; =========================================================
+; MENU PANEL
+; This appears before buttons so it stays behind them.
+; =========================================================
+
+[node name="MenuPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 365.0
+offset_top = 220.0
+offset_right = 815.0
+offset_bottom = 590.0
+mouse_filter = 2
+modulate = Color(0.22, 0.1, 0.38, 0.92)
+
+
+; =========================================================
+; MAIN TITLE
+; =========================================================
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 265.0
+offset_top = 45.0
+offset_right = 915.0
+offset_bottom = 125.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.96, 0.9, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.02, 0.18, 0.95)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 4
+theme_override_font_sizes/font_size = 44
+text = "TINY GHOST HOTEL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+
+[node name="SubtitleLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 290.0
+offset_top = 125.0
+offset_right = 890.0
+offset_bottom = 175.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.8, 0.7, 0.95, 1)
+theme_override_font_sizes/font_size = 20
+text = "The night shift is about to begin..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+
+; =========================================================
+; HUD
+; =========================================================
+
+[node name="ScoreLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 20.0
+offset_right = 285.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Score: 0 | Streak: 0"
+
+
+[node name="LivesLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 62.0
+offset_right = 285.0
+offset_bottom = 100.0
+theme_override_colors/font_color = Color(1, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "Lives: ❤ ❤ ❤"
+
+
+[node name="RoundLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 930.0
+offset_top = 25.0
+offset_right = 1125.0
+offset_bottom = 65.0
+theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Round 0/10"
+horizontal_alignment = 2
+
+
+; =========================================================
+; GAME INFORMATION
+; =========================================================
+
+[node name="RequestLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 115.0
+offset_right = 900.0
+offset_bottom = 170.0
+theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "A ghost is approaching the lobby..."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+
+[node name="MessageLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 250.0
+offset_top = 175.0
+offset_right = 930.0
+offset_bottom = 235.0
+theme_override_colors/font_color = Color(0.78, 0.7, 0.92, 1)
+theme_override_font_sizes/font_size = 18
+text = "Choose the correct room."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+
+[node name="GhostLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 470.0
+offset_top = 225.0
+offset_right = 710.0
+offset_bottom = 380.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 76
+text = "👻"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+
+[node name="RoomsLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 365.0
+offset_top = 395.0
+offset_right = 815.0
+offset_bottom = 445.0
+theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "Choose a Room"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+
+; =========================================================
+; ROOM BUTTONS
+; =========================================================
+
+[node name="ColdRoomButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 465.0
+offset_right = 410.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "❄ Cold Room
+Quiet and chilly"
+
+
+[node name="DarkRoomButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 460.0
+offset_top = 465.0
+offset_right = 720.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.94, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "🌑 Dark Room
+Dim and restful"
+
+
+[node name="MusicRoomButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 770.0
+offset_top = 465.0
+offset_right = 1030.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(1, 0.9, 0.97, 1)
+theme_override_font_sizes/font_size = 18
+text = "🎵 Music Room
+Soft spooky tunes"
+
+
+[node name="RestartButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 480.0
+offset_top = 580.0
+offset_right = 700.0
+offset_bottom = 635.0
+theme_override_font_sizes/font_size = 18
+text = "Play Again"
+
+
+; =========================================================
+; TITLE-SCREEN BUTTONS
+; =========================================================
+
+[node name="StartButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 460.0
+offset_top = 350.0
+offset_right = 720.0
+offset_bottom = 410.0
+theme_override_font_sizes/font_size = 21
+text = "ENTER HOTEL"
+
+
+[node name="GetReadyButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 460.0
+offset_top = 425.0
+offset_right = 720.0
+offset_bottom = 485.0
+theme_override_font_sizes/font_size = 19
+text = "BEGIN NIGHT"
+
+
+[node name="QuitButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 460.0
+offset_top = 500.0
+offset_right = 720.0
+offset_bottom = 555.0
+theme_override_font_sizes/font_size = 18
+text = "QUIT HOTEL"
+
+
+; =========================================================
+; AUDIO
+; =========================================================
+
+[node name="CorrectSound" type="AudioStreamPlayer2D" parent="."]
+
+[node name="WrongSound" type="AudioStreamPlayer2D" parent="."]
+
+[node name="GameOverSound" type="AudioStreamPlayer2D" parent="."]
