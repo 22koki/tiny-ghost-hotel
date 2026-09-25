@@ -19,9 +19,9 @@ func _build_collection() -> void:
 		child.queue_free()
 
 	for ghost_id in GhostCatalog.get_all_ids():
-		var discovered := ghost_id in GameState.discovered_ghosts
-		var data := GhostCatalog.get_ghost(ghost_id)
-		var button := Button.new()
+		var discovered: bool = ghost_id in GameState.discovered_ghosts
+		var data: Dictionary = GhostCatalog.get_ghost(ghost_id)
+		var button: Button = Button.new()
 		button.custom_minimum_size = Vector2(205, 145)
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.add_theme_font_size_override("font_size", 16)
@@ -43,7 +43,7 @@ func _build_collection() -> void:
 		ghost_grid.add_child(button)
 
 func _make_card_style(hovered: bool, discovered: bool) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
+	var style: StyleBoxFlat = StyleBoxFlat.new()
 	if discovered:
 		style.bg_color = Color(0.12, 0.055, 0.035, 0.97) if not hovered else Color(0.23, 0.10, 0.045, 0.99)
 		style.border_color = Color(0.58, 0.36, 0.15, 1.0) if not hovered else Color(0.92, 0.64, 0.28, 1.0)
