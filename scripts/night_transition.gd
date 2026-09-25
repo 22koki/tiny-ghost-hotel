@@ -31,6 +31,7 @@ func _ready() -> void:
 	reveal.text = _unlock_reveal(scene_night)
 	_prepare_text()
 	_build_world(scene_night)
+	_play_ghost_howl()
 	_play_cinematic(scene_night)
 
 func _prepare_text() -> void:
@@ -412,6 +413,25 @@ func _play_cinematic(night: int) -> void:
 	fog_tween_two.tween_callback(func() -> void:
 		fog_right.position.x = 1280.0
 	)
+
+func _play_ghost_howl() -> void:
+	var player: AudioStreamPlayer = AudioStreamPlayer.new()
+	var generator: AudioStreamGenerator = AudioStreamGenerator.new()
+	generator.mix_rate = 22050.0
+	generator.buffer_length = 2.0
+	player.stream = generator
+	player.volume_db = -14.0
+	add_child(player)
+	player.play()
+	var playback: AudioStreamGeneratorPlayback = player.get_stream_playback()
+	var frames: int = int(generator.mix_rate * 1.8)
+	for i in range(frames):
+		var time_value: float = float(i) / generator.mix_rate
+		var envelope: float = sin(PI * minf(time_value / 1.8, 1.0))
+		var frequency: float = 155.0 - 45.0 * time_value + 9.0 * sin(time_value * 5.0)
+		var sample: float = sin(TAU * frequency * time_value) * envelope * 0.20
+		sample += sin(TAU * frequency * 0.47 * time_value) * envelope * 0.07
+		playback.push_frame(Vector2(sample, sample))
 
 func _night_message(night: int) -> String:
 	match night:
