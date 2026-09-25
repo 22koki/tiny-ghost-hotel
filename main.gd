@@ -766,7 +766,7 @@ func check_room(selected_room: String) -> void:
 	)
 
 	if selected_room == correct_room:
-		var room_id := {
+		var room_id: String = {
 			"cold": "cold_room",
 			"dark": "dark_room",
 			"music": "music_room"
@@ -1018,7 +1018,7 @@ func get_success_message() -> String:
 func get_failure_message(
 	ghost_name: String
 ) -> String:
-	var messages := [
+	var messages: Array[String] = [
 		"%s is upset! You lost one life.",
 		"%s rattled the windows in disappointment!",
 		"%s drifted away grumbling about the room!",
@@ -1194,7 +1194,7 @@ func save_high_score() -> void:
 		)
 		return
 
-	var data := {
+	var data: Dictionary = {
 		"high_score": high_score
 	}
 
