@@ -4,7 +4,7 @@ extends Control
 const SAVE_PATH := "user://tiny_ghost_hotel_save.json"
 
 const STARTING_LIVES := 3
-const MAX_ROUNDS := 10
+const BASE_ROUNDS := 8
 const DEFAULT_PATIENCE := 8.0
 
 const CORRECT_WAIT_TIME := 1.1
@@ -18,6 +18,8 @@ var streak: int = 0
 var best_streak: int = 0
 
 var current_round: int = 0
+var max_rounds: int = BASE_ROUNDS
+var current_event: Dictionary = {}
 var current_ghost: Dictionary = {}
 var ghost_pool: Array[Dictionary] = []
 
@@ -312,7 +314,7 @@ func reset_game_data() -> void:
 	current_round = 0
 	current_ghost = {}
 
-	ghost_pool = ghosts.duplicate(true)
+	ghost_pool = get_available_ghosts()
 	ghost_pool.shuffle()
 
 	round_active = false
@@ -330,8 +332,10 @@ func start_game() -> void:
 
 	game_started = true
 
-	lobby_title.text = "TINY GHOST HOTEL — RECEPTION"
-	rooms_label.text = "Choose the perfect room"
+	max_rounds = get_round_count_for_night()
+	current_event = get_night_event()
+	lobby_title.text = "TINY GHOST HOTEL — NIGHT %d" % GameState.current_night
+	rooms_label.text = str(current_event.get("title", "Choose the perfect room"))
 
 	restart_button.visible = false
 
@@ -370,14 +374,14 @@ func update_lives_label() -> void:
 
 func update_round_label() -> void:
 	round_label.text = (
-		"Guest %d/%d"
-		% [current_round, MAX_ROUNDS]
+		"Guest %d/%d  •  Night %d"
+		% [current_round, max_rounds, GameState.current_night]
 	)
 
 
 func refill_ghost_pool_if_needed() -> void:
 	if ghost_pool.is_empty():
-		ghost_pool = ghosts.duplicate(true)
+		ghost_pool = get_available_ghosts()
 		ghost_pool.shuffle()
 
 
@@ -386,7 +390,7 @@ func spawn_new_ghost() -> void:
 		end_game_lost()
 		return
 
-	if current_round >= MAX_ROUNDS:
+	if current_round >= max_rounds:
 		end_game_won()
 		return
 
@@ -475,6 +479,8 @@ func spawn_new_ghost() -> void:
 			DEFAULT_PATIENCE
 		)
 	)
+	round_time *= get_patience_multiplier()
+	round_time *= float(current_event.get("patience_multiplier", 1.0))
 
 	time_remaining = round_time
 
@@ -1208,3 +1214,47 @@ func _on_dark_room_pressed() -> void:
 func _on_music_room_pressed() -> void:
 	animate_button_press(music_button)
 	check_room("music")
+
+func get_round_count_for_night() -> int:
+	return mini(BASE_ROUNDS + (GameState.current_night - 1), 15)
+
+
+func get_patience_multiplier() -> float:
+	var reduction := minf(float(GameState.current_night - 1) * 0.045, 0.30)
+	return 1.0 - reduction
+
+
+func get_available_ghosts() -> Array[Dictionary]:
+	var available: Array[Dictionary] = []
+	for ghost in ghosts:
+		var is_vip := bool(ghost.get("vip", false))
+		if is_vip and GameState.current_night < 3:
+			continue
+		available.append(ghost.duplicate(true))
+	return available
+
+
+func get_night_event() -> Dictionary:
+	var events: Array[Dictionary] = [
+		{
+			"title": "A Quiet Night at Reception",
+			"patience_multiplier": 1.0
+		},
+		{
+			"title": "Flickering Candles — guests are uneasy",
+			"patience_multiplier": 0.92
+		},
+		{
+			"title": "Full Moon Rush — spirits arrive impatient",
+			"patience_multiplier": 0.84
+		},
+		{
+			"title": "Heavy Fog — the lobby feels strangely slow",
+			"patience_multiplier": 1.08
+		}
+	]
+
+	if GameState.current_night <= 1:
+		return events[0]
+
+	return events[randi() % events.size()]
