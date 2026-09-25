@@ -1,0 +1,164 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms_overview.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+bg_color = Color(0.055, 0.027, 0.018, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.64, 0.40, 0.16, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_left = 14
+corner_radius_bottom_right = 14
+shadow_color = Color(0, 0, 0, 0.65)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="ButtonStyle"]
+bg_color = Color(0.16, 0.075, 0.04, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.76, 0.49, 0.2, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+
+[sub_resource type="StyleBoxFlat" id="ButtonHoverStyle"]
+bg_color = Color(0.29, 0.13, 0.055, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.72, 0.3, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+
+[node name="RoomsOverview" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.012, 0.018, 1)
+
+[node name="Header" type="Label" parent="."]
+offset_left = 48.0
+offset_top = 30.0
+offset_right = 720.0
+offset_bottom = 86.0
+theme_override_colors/font_color = Color(0.96, 0.80, 0.48, 1)
+theme_override_font_sizes/font_size = 34
+text = "THE HOTEL ROOMS"
+
+[node name="Subtitle" type="Label" parent="."]
+offset_left = 50.0
+offset_top = 82.0
+offset_right = 780.0
+offset_bottom = 118.0
+theme_override_colors/font_color = Color(0.73, 0.66, 0.57, 1)
+theme_override_font_sizes/font_size = 16
+text = "Restore forgotten rooms, welcome stranger guests, and grow your midnight hotel."
+
+[node name="TopBar" type="Panel" parent="."]
+offset_left = 800.0
+offset_top = 28.0
+offset_right = 1230.0
+offset_bottom = 112.0
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="NightLabel" type="Label" parent="TopBar"]
+offset_left = 20.0
+offset_top = 12.0
+offset_right = 410.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.83, 0.73, 0.60, 1)
+theme_override_font_sizes/font_size = 16
+text = "NIGHT 1"
+
+[node name="CoinsLabel" type="Label" parent="TopBar"]
+offset_left = 20.0
+offset_top = 44.0
+offset_right = 410.0
+offset_bottom = 72.0
+theme_override_colors/font_color = Color(1.0, 0.78, 0.31, 1)
+theme_override_font_sizes/font_size = 18
+text = "◉ 0 COINS"
+
+[node name="Scroll" type="ScrollContainer" parent="."]
+offset_left = 48.0
+offset_top = 145.0
+offset_right = 836.0
+offset_bottom = 655.0
+
+[node name="RoomGrid" type="GridContainer" parent="Scroll"]
+layout_mode = 2
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 3
+
+[node name="DetailPanel" type="Panel" parent="."]
+offset_left = 865.0
+offset_top = 145.0
+offset_right = 1230.0
+offset_bottom = 570.0
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="Title" type="Label" parent="DetailPanel"]
+offset_left = 24.0
+offset_top = 28.0
+offset_right = 340.0
+offset_bottom = 92.0
+theme_override_colors/font_color = Color(0.96, 0.79, 0.44, 1)
+theme_override_font_sizes/font_size = 23
+text = "Room"
+autowrap_mode = 2
+
+[node name="Body" type="Label" parent="DetailPanel"]
+offset_left = 24.0
+offset_top = 112.0
+offset_right = 340.0
+offset_bottom = 330.0
+theme_override_colors/font_color = Color(0.85, 0.79, 0.70, 1)
+theme_override_font_sizes/font_size = 16
+text = "Room details"
+autowrap_mode = 2
+vertical_alignment = 1
+
+[node name="ActionButton" type="Button" parent="DetailPanel"]
+offset_left = 34.0
+offset_top = 344.0
+offset_right = 330.0
+offset_bottom = 398.0
+theme_override_colors/font_color = Color(1, 0.9, 0.72, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/hover = SubResource("ButtonHoverStyle")
+text = "UNLOCK"
+
+[node name="BackButton" type="Button" parent="."]
+offset_left = 970.0
+offset_top = 600.0
+offset_right = 1230.0
+offset_bottom = 654.0
+theme_override_colors/font_color = Color(1, 0.9, 0.72, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/hover = SubResource("ButtonHoverStyle")
+text = "← BACK TO LOBBY"
