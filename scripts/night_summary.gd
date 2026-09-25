@@ -13,12 +13,12 @@ extends Control
 @onready var book_button: Button = $SummaryPanel/BookButton
 
 func _ready() -> void:
-	var data := GameState.last_night_summary
+	var data: Dictionary = GameState.last_night_summary
 	if data.is_empty():
 		get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 		return
 
-	var won := bool(data.get("won", false))
+	var won: bool = bool(data.get("won", false))
 	title.text = "THE NIGHT IS COMPLETE" if won else "THE HOTEL FALLS QUIET"
 	night_label.text = "NIGHT %d LEDGER" % int(data.get("night", 1))
 	result_label.text = "SHIFT COMPLETE" if won else "SHIFT ENDED EARLY"
