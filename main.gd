@@ -1432,9 +1432,9 @@ func reset_special_mechanics() -> void:
 	setup_button_text()
 
 	# Restore the original scene positions after Poltergeist interference.
-	cold_button.position = Vector2(105.0, 540.0)
-	dark_button.position = Vector2(455.0, 540.0)
-	music_button.position = Vector2(805.0, 540.0)
+	cold_button.position = Vector2(105.0, 590.0)
+	dark_button.position = Vector2(495.0, 590.0)
+	music_button.position = Vector2(885.0, 590.0)
 
 
 func get_guest_failure_penalty() -> int:
