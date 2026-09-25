@@ -4,7 +4,7 @@ extends Control
 const SAVE_PATH := "user://tiny_ghost_hotel_save.json"
 
 const STARTING_LIVES := 3
-const MAX_ROUNDS := 10
+const BASE_ROUNDS := 8
 const DEFAULT_PATIENCE := 8.0
 
 const CORRECT_WAIT_TIME := 1.1
@@ -18,6 +18,10 @@ var streak: int = 0
 var best_streak: int = 0
 
 var current_round: int = 0
+var max_rounds: int = BASE_ROUNDS
+var current_event: Dictionary = {}
+var room_button_order: Array[Button] = []
+var special_effect_active: bool = false
 var current_ghost: Dictionary = {}
 var ghost_pool: Array[Dictionary] = []
 
@@ -174,6 +178,114 @@ var ghosts: Array[Dictionary] = [
 		"base_points": 1,
 		"vip": false,
 		"icon": "🎶👻"
+	},
+	{
+		"name": "Count Vesper",
+		"preference": "dark",
+		"intro": "requests blackout curtains and no mirrors",
+		"mood": "Composed",
+		"personality": "Aristocratic",
+		"patience": 6.0,
+		"base_points": 2,
+		"vip": true,
+		"unlock_night": 4,
+		"icon": "🦇👻"
+	},
+	{
+		"name": "Mabel Mourning",
+		"preference": "music",
+		"intro": "asks for a room where old wedding songs still play",
+		"mood": "Melancholy",
+		"personality": "Romantic",
+		"patience": 7.0,
+		"base_points": 2,
+		"vip": false,
+		"unlock_night": 4,
+		"icon": "👰👻"
+	},
+	{
+		"name": "Professor Cog",
+		"preference": "music",
+		"intro": "ticks softly and listens for mechanical rhythms",
+		"mood": "Focused",
+		"personality": "Inventive",
+		"patience": 6.5,
+		"base_points": 2,
+		"vip": false,
+		"unlock_night": 5,
+		"icon": "⚙️👻"
+	},
+	{
+		"name": "The Headless Traveller",
+		"preference": "cold",
+		"intro": "has arrived from a very long road and wants silence",
+		"mood": "Weary",
+		"personality": "Stoic",
+		"patience": 5.5,
+		"base_points": 2,
+		"vip": false,
+		"unlock_night": 5,
+		"icon": "🎩👻"
+	},
+	{
+		"name": "The Bell Twins",
+		"preference": "music",
+		"intro": "finish each other's melodies and refuse to separate",
+		"mood": "Excited",
+		"personality": "Mischievous",
+		"patience": 5.0,
+		"base_points": 3,
+		"vip": false,
+		"unlock_night": 6,
+		"icon": "🔔👻👻"
+	},
+	{
+		"name": "Banshee Beatrice",
+		"preference": "dark",
+		"intro": "warns that bright rooms make her voice much louder",
+		"mood": "Restless",
+		"personality": "Dramatic",
+		"patience": 4.8,
+		"base_points": 3,
+		"vip": false,
+		"unlock_night": 6,
+		"icon": "📣👻"
+	},
+	{
+		"name": "Little Lucien",
+		"preference": "cold",
+		"intro": "clutches a wooden toy and asks for a quiet chilly room",
+		"mood": "Shy",
+		"personality": "Gentle",
+		"patience": 8.5,
+		"base_points": 2,
+		"vip": false,
+		"unlock_night": 7,
+		"icon": "🧸👻"
+	},
+	{
+		"name": "The Poltergeist",
+		"preference": "dark",
+		"intro": "has already moved three lamps without touching them",
+		"mood": "Chaotic",
+		"personality": "Unruly",
+		"patience": 4.2,
+		"base_points": 3,
+		"vip": false,
+		"unlock_night": 7,
+		"icon": "🪑👻"
+	},
+	{
+		"name": "Madame Umbra",
+		"preference": "dark",
+		"intro": "arrives beneath an eclipse and expects royal treatment",
+		"mood": "Severe",
+		"personality": "Regal",
+		"patience": 4.0,
+		"base_points": 4,
+		"vip": true,
+		"unlock_night": 8,
+		"icon": "🌘👑👻"
 	}
 ]
 
@@ -186,6 +298,7 @@ func _ready() -> void:
 	setup_button_text()
 	connect_buttons()
 	setup_button_animations()
+	room_button_order = [cold_button, dark_button, music_button]
 
 	start_game()
 
@@ -312,7 +425,7 @@ func reset_game_data() -> void:
 	current_round = 0
 	current_ghost = {}
 
-	ghost_pool = ghosts.duplicate(true)
+	ghost_pool = get_available_ghosts()
 	ghost_pool.shuffle()
 
 	round_active = false
@@ -326,12 +439,15 @@ func reset_game_data() -> void:
 
 
 func start_game() -> void:
+	GameState.clear_room_occupants()
 	reset_game_data()
 
 	game_started = true
 
-	lobby_title.text = "TINY GHOST HOTEL — RECEPTION"
-	rooms_label.text = "Choose the perfect room"
+	max_rounds = get_round_count_for_night()
+	current_event = get_night_event()
+	lobby_title.text = "TINY GHOST HOTEL — NIGHT %d" % GameState.current_night
+	rooms_label.text = str(current_event.get("title", "Choose the perfect room"))
 
 	restart_button.visible = false
 
@@ -370,14 +486,14 @@ func update_lives_label() -> void:
 
 func update_round_label() -> void:
 	round_label.text = (
-		"Guest %d/%d"
-		% [current_round, MAX_ROUNDS]
+		"Guest %d/%d  •  Night %d"
+		% [current_round, max_rounds, GameState.current_night]
 	)
 
 
 func refill_ghost_pool_if_needed() -> void:
 	if ghost_pool.is_empty():
-		ghost_pool = ghosts.duplicate(true)
+		ghost_pool = get_available_ghosts()
 		ghost_pool.shuffle()
 
 
@@ -386,7 +502,7 @@ func spawn_new_ghost() -> void:
 		end_game_lost()
 		return
 
-	if current_round >= MAX_ROUNDS:
+	if current_round >= max_rounds:
 		end_game_won()
 		return
 
@@ -394,6 +510,9 @@ func spawn_new_ghost() -> void:
 
 	current_round += 1
 	current_ghost = ghost_pool.pop_back()
+
+	var ghost_id := str(current_ghost.get("name", "unknown")).to_lower().replace(" ", "_")
+	GameState.discover_ghost(ghost_id)
 
 	update_round_label()
 
@@ -472,6 +591,8 @@ func spawn_new_ghost() -> void:
 			DEFAULT_PATIENCE
 		)
 	)
+	round_time *= get_patience_multiplier()
+	round_time *= float(current_event.get("patience_multiplier", 1.0))
 
 	time_remaining = round_time
 
@@ -480,6 +601,7 @@ func spawn_new_ghost() -> void:
 	timer_bar.modulate = Color.WHITE
 
 	set_room_buttons_disabled(false)
+	apply_guest_special_mechanic()
 
 	transition_running = false
 	round_active = true
@@ -633,6 +755,7 @@ func check_room(selected_room: String) -> void:
 	transition_running = true
 
 	set_room_buttons_disabled(true)
+	reset_special_mechanics()
 	stop_game_ghost_animation()
 
 	var correct_room := str(
@@ -643,6 +766,17 @@ func check_room(selected_room: String) -> void:
 	)
 
 	if selected_room == correct_room:
+		var room_id := {
+			"cold": "cold_room",
+			"dark": "dark_room",
+			"music": "music_room"
+		}.get(selected_room, "")
+		if not room_id.is_empty():
+			GameState.check_in_guest(
+				room_id,
+				str(current_ghost.get("name", "Unknown Guest")),
+				str(current_ghost.get("icon", "👻"))
+			)
 		await handle_correct_answer()
 	else:
 		await handle_wrong_answer()
@@ -651,7 +785,7 @@ func check_room(selected_room: String) -> void:
 		end_game_lost()
 		return
 
-	if current_round >= MAX_ROUNDS:
+	if current_round >= max_rounds:
 		end_game_won()
 		return
 
@@ -748,7 +882,7 @@ func animate_correct_answer() -> void:
 
 
 func handle_wrong_answer() -> void:
-	lives -= 1
+	lives -= get_guest_failure_penalty()
 	streak = 0
 
 	update_lives_label()
@@ -828,7 +962,7 @@ func handle_timeout() -> void:
 	set_room_buttons_disabled(true)
 	stop_game_ghost_animation()
 
-	lives -= 1
+	lives -= get_guest_failure_penalty()
 	streak = 0
 
 	update_lives_label()
@@ -859,7 +993,7 @@ func handle_timeout() -> void:
 		end_game_lost()
 		return
 
-	if current_round >= MAX_ROUNDS:
+	if current_round >= max_rounds:
 		end_game_won()
 		return
 
@@ -945,8 +1079,9 @@ func end_game_won() -> void:
 	timer_bar.value = 0.0
 	rooms_label.text = "A successful night"
 
-	show_end_buttons()
-	animate_end_screen()
+	GameState.finish_shift(score, best_streak, true, get_hotel_rank())
+	await get_tree().create_timer(1.4).timeout
+	get_tree().change_scene_to_file("res://scenes/NightSummary.tscn")
 
 
 func end_game_lost() -> void:
@@ -988,7 +1123,9 @@ func end_game_lost() -> void:
 	if game_over_sound.stream:
 		game_over_sound.play()
 
-	animate_end_screen()
+	GameState.finish_shift(score, best_streak, false, get_hotel_rank())
+	await get_tree().create_timer(1.4).timeout
+	get_tree().change_scene_to_file("res://scenes/NightSummary.tscn")
 
 
 func show_end_buttons() -> void:
@@ -1202,3 +1339,118 @@ func _on_dark_room_pressed() -> void:
 func _on_music_room_pressed() -> void:
 	animate_button_press(music_button)
 	check_room("music")
+
+func get_round_count_for_night() -> int:
+	return mini(BASE_ROUNDS + (GameState.current_night - 1), 15)
+
+
+func get_patience_multiplier() -> float:
+	var reduction := minf(float(GameState.current_night - 1) * 0.045, 0.30)
+	return 1.0 - reduction
+
+
+func get_available_ghosts() -> Array[Dictionary]:
+	var available: Array[Dictionary] = []
+	for ghost in ghosts:
+		var unlock_night := int(ghost.get("unlock_night", 1))
+		if GameState.current_night < unlock_night:
+			continue
+		var is_vip := bool(ghost.get("vip", false))
+		if is_vip and GameState.current_night < 3:
+			continue
+		available.append(ghost.duplicate(true))
+	return available
+
+
+func get_night_event() -> Dictionary:
+	var events: Array[Dictionary] = [
+		{
+			"title": "A Quiet Night at Reception",
+			"patience_multiplier": 1.0
+		},
+		{
+			"title": "Flickering Candles — guests are uneasy",
+			"patience_multiplier": 0.92
+		},
+		{
+			"title": "Full Moon Rush — spirits arrive impatient",
+			"patience_multiplier": 0.84
+		},
+		{
+			"title": "Heavy Fog — the lobby feels strangely slow",
+			"patience_multiplier": 1.08
+		}
+	]
+
+	if GameState.current_night <= 1:
+		return events[0]
+
+	return events[randi() % events.size()]
+
+
+func apply_guest_special_mechanic() -> void:
+	special_effect_active = false
+	var ghost_name := str(current_ghost.get("name", ""))
+
+	match ghost_name:
+		"The Bell Twins":
+			special_effect_active = true
+			round_time *= 0.88
+			time_remaining = round_time
+			timer_bar.max_value = round_time
+			timer_bar.value = round_time
+			message_label.text += "  •  Twin Trouble: decide quickly!"
+		"Banshee Beatrice":
+			special_effect_active = true
+			round_time *= 0.78
+			time_remaining = round_time
+			timer_bar.max_value = round_time
+			timer_bar.value = round_time
+			message_label.text += "  •  Banshee Wail: patience drains faster!"
+		"The Poltergeist":
+			special_effect_active = true
+			shuffle_room_buttons()
+			message_label.text += "  •  Poltergeist: the room plaques have moved!"
+		"Count Vesper":
+			special_effect_active = true
+			dark_button.text = "🌑 BLACKOUT SUITE\nNo mirrors. No sunrise."
+			message_label.text += "  •  Noble Demand: he expects darkness."
+		"Madame Umbra":
+			special_effect_active = true
+			guest_badge_label.text = "★ LEGENDARY BOSS GUEST ★"
+			guest_badge_label.modulate = Color(1.0, 0.52, 0.18, 1.0)
+			round_time *= 0.70
+			time_remaining = round_time
+			timer_bar.max_value = round_time
+			timer_bar.value = round_time
+			message_label.text += "  •  Eclipse Trial: one mistake could ruin the night."
+		_:
+			pass
+
+
+func shuffle_room_buttons() -> void:
+	var positions: Array[Vector2] = []
+	for button in room_button_order:
+		positions.append(button.position)
+	positions.shuffle()
+	for i in range(room_button_order.size()):
+		room_button_order[i].position = positions[i]
+
+
+func reset_special_mechanics() -> void:
+	if not special_effect_active:
+		return
+	special_effect_active = false
+	setup_button_text()
+
+	# Restore the original scene positions after Poltergeist interference.
+	cold_button.position = Vector2(105.0, 590.0)
+	dark_button.position = Vector2(495.0, 590.0)
+	music_button.position = Vector2(885.0, 590.0)
+
+
+func get_guest_failure_penalty() -> int:
+	var ghost_name := str(current_ghost.get("name", ""))
+	if ghost_name == "Madame Umbra":
+		return 2
+	return 1
