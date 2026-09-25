@@ -26,6 +26,7 @@ extends Control
 @onready var how_to_play_button: Button = $HowToPlayButton
 @onready var load_game_button: Button = $LoadGameButton
 @onready var ghost_book_button: Button = $GhostBookButton
+@onready var rooms_button: Button = $RoomsButton
 @onready var quit_button: Button = $QuitButton
 @onready var hotel_status_label: Label = $HotelStatusLabel
 
@@ -118,6 +119,11 @@ func connect_buttons() -> void:
 	)
 
 	connect_button(
+		rooms_button,
+		_on_rooms_pressed
+	)
+
+	connect_button(
 		quit_button,
 		_on_quit_pressed
 	)
@@ -142,6 +148,7 @@ func setup_button_animations() -> void:
 		load_game_button,
 		how_to_play_button,
 		ghost_book_button,
+		rooms_button,
 		quit_button,
 		close_how_to_play_button
 	]
@@ -176,6 +183,7 @@ func animate_menu_entrance() -> void:
 	load_game_button.modulate.a = 0.0
 	how_to_play_button.modulate.a = 0.0
 	ghost_book_button.modulate.a = 0.0
+	rooms_button.modulate.a = 0.0
 	quit_button.modulate.a = 0.0
 
 	title_label.scale = Vector2(0.72, 0.72)
@@ -250,6 +258,13 @@ func animate_menu_entrance() -> void:
 		"modulate:a",
 		1.0,
 		1.22
+	)
+
+	tween.tween_property(
+		rooms_button,
+		"modulate:a",
+		1.0,
+		1.26
 	)
 
 	tween.tween_property(
@@ -681,6 +696,7 @@ func play_enter_hotel_transition() -> void:
 	load_game_button.disabled = true
 	how_to_play_button.disabled = true
 	ghost_book_button.disabled = true
+	rooms_button.disabled = true
 	quit_button.disabled = true
 
 	stop_background_animations()
@@ -881,3 +897,10 @@ func _on_ghost_book_pressed() -> void:
 		return
 	animate_button_press(ghost_book_button)
 	hotel_status_label.text = "Ghost Book coming next  •  %d spirits discovered" % GameState.discovered_ghosts.size()
+
+
+func _on_rooms_pressed() -> void:
+	if entering_hotel or popup_open:
+		return
+	animate_button_press(rooms_button)
+	get_tree().change_scene_to_file("res://scenes/RoomsOverview.tscn")
