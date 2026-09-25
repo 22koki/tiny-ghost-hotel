@@ -13,6 +13,7 @@ extends Control
 @onready var seam: ColorRect = $Doors/Seam
 @onready var knob_left: Label = $Doors/KnobLeft
 @onready var knob_right: Label = $Doors/KnobRight
+@onready var hotel_stage: Control = $HotelStage
 
 func _ready() -> void:
 	var night: int = GameState.current_night
@@ -24,6 +25,9 @@ func _ready() -> void:
 	reveal.modulate.a = 0.0
 	clock.modulate.a = 0.0
 	moon.modulate.a = 0.0
+
+	var windows: Array[ColorRect] = _build_hotel_stage(night)
+	_animate_hotel(windows, night)
 
 	var tween: Tween = create_tween()
 	tween.tween_interval(0.25)
@@ -65,6 +69,75 @@ func _ready() -> void:
 	tween.tween_interval(1.35)
 	tween.tween_property(self, "modulate:a", 0.0, 0.65)
 	tween.tween_callback(_enter_night)
+
+
+func _build_hotel_stage(night: int) -> Array[ColorRect]:
+	var windows: Array[ColorRect] = []
+	var body: ColorRect = ColorRect.new()
+	body.position = Vector2(120, 120)
+	body.size = Vector2(540, 310)
+	body.color = Color(0.07, 0.03, 0.025, 1.0)
+	hotel_stage.add_child(body)
+
+	var roof: Polygon2D = Polygon2D.new()
+	roof.polygon = PackedVector2Array([Vector2(90, 130), Vector2(390, 10), Vector2(690, 130)])
+	roof.color = Color(0.04, 0.018, 0.018, 1.0)
+	hotel_stage.add_child(roof)
+
+	var sign: Label = Label.new()
+	sign.text = "TINY GHOST HOTEL"
+	sign.position = Vector2(230, 145)
+	sign.size = Vector2(320, 45)
+	sign.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sign.add_theme_font_size_override("font_size", 20)
+	sign.add_theme_color_override("font_color", Color(0.85, 0.63, 0.28, 1.0))
+	hotel_stage.add_child(sign)
+
+	for floor in range(3):
+		for column in range(5):
+			var window: ColorRect = ColorRect.new()
+			window.position = Vector2(165 + column * 88, 205 + floor * 72)
+			window.size = Vector2(46, 34)
+			window.color = Color(0.12, 0.08, 0.05, 1.0)
+			hotel_stage.add_child(window)
+			windows.append(window)
+
+	var doorway: ColorRect = ColorRect.new()
+	doorway.position = Vector2(350, 360)
+	doorway.size = Vector2(80, 70)
+	doorway.color = Color(0.12, 0.05, 0.025, 1.0)
+	hotel_stage.add_child(doorway)
+
+	for i in range(min(night, 5)):
+		var ghost: Label = Label.new()
+		ghost.text = "👻"
+		ghost.position = Vector2(-120 - i * 110, 70 + (i % 2) * 70)
+		ghost.size = Vector2(80, 80)
+		ghost.add_theme_font_size_override("font_size", 42)
+		hotel_stage.add_child(ghost)
+		var flight: Tween = create_tween()
+		flight.set_loops()
+		flight.tween_property(ghost, "position:x", 820.0, 4.5 + float(i) * 0.35)
+		flight.tween_callback(func() -> void: ghost.position.x = -120.0)
+
+	return windows
+
+func _animate_hotel(windows: Array[ColorRect], night: int) -> void:
+	hotel_stage.modulate.a = 0.0
+	hotel_stage.position.y = 90.0
+	var hotel_tween: Tween = create_tween()
+	hotel_tween.tween_property(hotel_stage, "modulate:a", 1.0, 0.8)
+	hotel_tween.parallel().tween_property(hotel_stage, "position:y", 0.0, 1.0).set_trans(Tween.TRANS_BACK)
+	for i in range(windows.size()):
+		var target: Color = Color(1.0, 0.68, 0.24, 1.0)
+		if night >= 8 and i % 4 == 0:
+			target = Color(0.55, 0.08, 0.10, 1.0)
+		hotel_tween.tween_property(windows[i], "color", target, 0.07)
+	if night >= 4:
+		var shake: Tween = create_tween()
+		for j in range(7):
+			shake.tween_property(hotel_stage, "position:x", 8.0 if j % 2 == 0 else -8.0, 0.045)
+		shake.tween_property(hotel_stage, "position:x", 0.0, 0.06)
 
 func _night_message(night: int) -> String:
 	match night:
