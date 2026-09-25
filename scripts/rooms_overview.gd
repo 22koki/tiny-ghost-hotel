@@ -1,15 +1,29 @@
 extends Control
 
-const CARD_SIZE := Vector2(248, 178)
+const MAP_POSITIONS := {
+	"cold_room": Vector2(65, 350),
+	"dark_room": Vector2(265, 350),
+	"music_room": Vector2(465, 350),
+	"library_room": Vector2(65, 220),
+	"garden_room": Vector2(265, 220),
+	"potion_room": Vector2(465, 220),
+	"art_room": Vector2(65, 90),
+	"moonlight_suite": Vector2(265, 90),
+	"seance_room": Vector2(465, 90),
+	"clockwork_room": Vector2(665, 220),
+	"vip_room": Vector2(665, 90),
+	"mirror_room": Vector2(665, 350)
+}
 
 @onready var coins_label: Label = $TopBar/CoinsLabel
 @onready var night_label: Label = $TopBar/NightLabel
-@onready var room_grid: GridContainer = $Scroll/RoomGrid
-@onready var detail_panel: Panel = $DetailPanel
+@onready var hotel_map: Control = $HotelMap
 @onready var detail_title: Label = $DetailPanel/Title
 @onready var detail_body: Label = $DetailPanel/Body
 @onready var action_button: Button = $DetailPanel/ActionButton
 @onready var back_button: Button = $BackButton
+@onready var occupancy_label: Label = $DetailPanel/Occupancy
+@onready var floor_label: Label = $HotelMap/FloorLabel
 
 var selected_room_id: String = ""
 var room_buttons: Dictionary = {}
@@ -17,56 +31,54 @@ var room_buttons: Dictionary = {}
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	action_button.pressed.connect(_on_action_pressed)
-	_build_room_cards()
+	_build_hotel_map()
 	_refresh_header()
 	_select_first_room()
 
-func _build_room_cards() -> void:
-	for child in room_grid.get_children():
-		child.queue_free()
-	room_buttons.clear()
-
+func _build_hotel_map() -> void:
 	for room_id in RoomCatalog.get_all_room_ids():
 		var data := RoomCatalog.get_room(room_id)
 		var button := Button.new()
-		button.custom_minimum_size = CARD_SIZE
+		button.position = MAP_POSITIONS.get(room_id, Vector2.ZERO)
+		button.size = Vector2(175, 105)
 		button.text = _room_button_text(room_id, data)
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.add_theme_font_size_override("font_size", 17)
-		button.add_theme_color_override("font_color", Color(0.94, 0.84, 0.64))
-		button.add_theme_color_override("font_hover_color", Color(1.0, 0.92, 0.72))
-		button.add_theme_stylebox_override("normal", _make_card_style(false))
-		button.add_theme_stylebox_override("hover", _make_card_style(true))
+		button.add_theme_font_size_override("font_size", 14)
+		button.add_theme_color_override("font_color", Color(0.93, 0.82, 0.65))
+		button.add_theme_color_override("font_hover_color", Color(1.0, 0.94, 0.76))
+		button.add_theme_stylebox_override("normal", _make_room_style(false, GameState.is_room_unlocked(room_id)))
+		button.add_theme_stylebox_override("hover", _make_room_style(true, GameState.is_room_unlocked(room_id)))
 		button.pressed.connect(_on_room_selected.bind(room_id))
-		room_grid.add_child(button)
+		hotel_map.add_child(button)
 		room_buttons[room_id] = button
 
-func _make_card_style(hovered: bool) -> StyleBoxFlat:
+func _make_room_style(hovered: bool, unlocked: bool) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.12, 0.055, 0.035, 0.97) if not hovered else Color(0.22, 0.10, 0.045, 0.99)
-	style.border_color = Color(0.58, 0.36, 0.15, 1.0) if not hovered else Color(0.92, 0.64, 0.28, 1.0)
+	if unlocked:
+		style.bg_color = Color(0.16, 0.075, 0.035, 0.98) if not hovered else Color(0.28, 0.13, 0.05, 1.0)
+		style.border_color = Color(0.69, 0.44, 0.18, 1.0) if not hovered else Color(1.0, 0.72, 0.30, 1.0)
+	else:
+		style.bg_color = Color(0.055, 0.045, 0.045, 0.96)
+		style.border_color = Color(0.22, 0.19, 0.17, 1.0)
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(10)
-	style.shadow_color = Color(0.01, 0.005, 0.0, 0.72)
+	style.set_corner_radius_all(8)
+	style.shadow_color = Color(0, 0, 0, 0.72)
 	style.shadow_size = 8 if not hovered else 14
 	return style
 
 func _room_button_text(room_id: String, data: Dictionary) -> String:
 	var unlocked := GameState.is_room_unlocked(room_id)
 	var level := int(GameState.room_levels.get(room_id, 1))
-	var status := "LEVEL %d" % level if unlocked else "LOCKED"
-	var requirement := ""
-	if not unlocked:
-		requirement = "\nNight %d • %d coins" % [
-			int(data.get("unlock_night", 1)),
-			int(data.get("unlock_cost", 0))
+	if unlocked:
+		return "%s  %s\nLEVEL %d\n● READY" % [
+			str(data.get("icon", "✦")),
+			str(data.get("short_name", "Room")),
+			level
 		]
-	return "%s  %s\n%s\n%s%s" % [
-		str(data.get("icon", "✦")),
+	return "🔒  %s\nNIGHT %d\n%d COINS" % [
 		str(data.get("short_name", "Room")),
-		str(data.get("name", "Unknown Room")),
-		status,
-		requirement
+		int(data.get("unlock_night", 1)),
+		int(data.get("unlock_cost", 0))
 	]
 
 func _select_first_room() -> void:
@@ -80,20 +92,20 @@ func _on_room_selected(room_id: String) -> void:
 	var unlocked := GameState.is_room_unlocked(room_id)
 	var level := int(GameState.room_levels.get(room_id, 1))
 	var best_for: Array = data.get("best_for", [])
-	var traits := ", ".join(best_for)
 
 	detail_title.text = "%s  %s" % [str(data.get("icon", "✦")), str(data.get("name", "Room"))]
+	occupancy_label.text = "STATUS: READY FOR GUESTS" if unlocked else "STATUS: SEALED"
 	detail_body.text = "%s\n\nBest for: %s\n\n%s" % [
 		str(data.get("theme", "")),
-		traits,
-		"Room Level: %d" % level if unlocked else "This room is still sealed."
+		", ".join(best_for),
+		"Room Level: %d\nUpgrades improve comfort and future earnings." % level if unlocked else "This room is still sealed behind an old brass lock."
 	]
 
 	if unlocked:
 		var costs: Array = data.get("upgrade_costs", [])
 		if level - 1 < costs.size():
 			var cost := int(costs[level - 1])
-			action_button.text = "UPGRADE • %d COINS" % cost
+			action_button.text = "UPGRADE ROOM • %d COINS" % cost
 			action_button.disabled = GameState.coins < cost
 		else:
 			action_button.text = "MAXIMUM LEVEL"
@@ -102,10 +114,10 @@ func _on_room_selected(room_id: String) -> void:
 		var night_required := int(data.get("unlock_night", 1))
 		var cost := int(data.get("unlock_cost", 0))
 		if GameState.current_night < night_required:
-			action_button.text = "UNLOCKS ON NIGHT %d" % night_required
+			action_button.text = "SEALED UNTIL NIGHT %d" % night_required
 			action_button.disabled = true
 		else:
-			action_button.text = "UNLOCK • %d COINS" % cost
+			action_button.text = "UNLOCK DOOR • %d COINS" % cost
 			action_button.disabled = GameState.coins < cost
 
 func _on_action_pressed() -> void:
@@ -128,20 +140,26 @@ func _on_action_pressed() -> void:
 			GameState.unlock_room(selected_room_id)
 
 	_refresh_header()
-	_refresh_cards()
+	_refresh_map()
 	_on_room_selected(selected_room_id)
 
 func _refresh_header() -> void:
-	coins_label.text = "◉ %d COINS" % GameState.coins
+	coins_label.text = "◉ %d GHOST COINS" % GameState.coins
 	night_label.text = "NIGHT %d  •  REPUTATION %d" % [
 		GameState.current_night,
 		GameState.hotel_reputation
 	]
+	floor_label.text = "THE OLD HOTEL  •  %d / %d ROOMS OPEN" % [
+		GameState.unlocked_rooms.size(),
+		RoomCatalog.get_all_room_ids().size()
+	]
 
-func _refresh_cards() -> void:
+func _refresh_map() -> void:
 	for room_id in room_buttons:
 		var button: Button = room_buttons[room_id]
 		button.text = _room_button_text(room_id, RoomCatalog.get_room(room_id))
+		button.add_theme_stylebox_override("normal", _make_room_style(false, GameState.is_room_unlocked(room_id)))
+		button.add_theme_stylebox_override("hover", _make_room_style(true, GameState.is_room_unlocked(room_id)))
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
