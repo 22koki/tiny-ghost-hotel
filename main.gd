@@ -439,6 +439,7 @@ func reset_game_data() -> void:
 
 
 func start_game() -> void:
+	GameState.clear_room_occupants()
 	reset_game_data()
 
 	game_started = true
@@ -765,6 +766,17 @@ func check_room(selected_room: String) -> void:
 	)
 
 	if selected_room == correct_room:
+		var room_id := {
+			"cold": "cold_room",
+			"dark": "dark_room",
+			"music": "music_room"
+		}.get(selected_room, "")
+		if not room_id.is_empty():
+			GameState.check_in_guest(
+				room_id,
+				str(current_ghost.get("name", "Unknown Guest")),
+				str(current_ghost.get("icon", "👻"))
+			)
 		await handle_correct_answer()
 	else:
 		await handle_wrong_answer()
