@@ -20,6 +20,8 @@ var best_streak: int = 0
 var current_round: int = 0
 var max_rounds: int = BASE_ROUNDS
 var current_event: Dictionary = {}
+var room_button_order: Array[Button] = []
+var special_effect_active: bool = false
 var current_ghost: Dictionary = {}
 var ghost_pool: Array[Dictionary] = []
 
@@ -296,6 +298,7 @@ func _ready() -> void:
 	setup_button_text()
 	connect_buttons()
 	setup_button_animations()
+	room_button_order = [cold_button, dark_button, music_button]
 
 	start_game()
 
@@ -597,6 +600,7 @@ func spawn_new_ghost() -> void:
 	timer_bar.modulate = Color.WHITE
 
 	set_room_buttons_disabled(false)
+	apply_guest_special_mechanic()
 
 	transition_running = false
 	round_active = true
@@ -750,6 +754,7 @@ func check_room(selected_room: String) -> void:
 	transition_running = true
 
 	set_room_buttons_disabled(true)
+	reset_special_mechanics()
 	stop_game_ghost_animation()
 
 	var correct_room := str(
@@ -865,7 +870,7 @@ func animate_correct_answer() -> void:
 
 
 func handle_wrong_answer() -> void:
-	lives -= 1
+	lives -= get_guest_failure_penalty()
 	streak = 0
 
 	update_lives_label()
@@ -945,7 +950,7 @@ func handle_timeout() -> void:
 	set_room_buttons_disabled(true)
 	stop_game_ghost_animation()
 
-	lives -= 1
+	lives -= get_guest_failure_penalty()
 	streak = 0
 
 	update_lives_label()
@@ -1369,3 +1374,71 @@ func get_night_event() -> Dictionary:
 		return events[0]
 
 	return events[randi() % events.size()]
+
+
+func apply_guest_special_mechanic() -> void:
+	special_effect_active = false
+	var ghost_name := str(current_ghost.get("name", ""))
+
+	match ghost_name:
+		"The Bell Twins":
+			special_effect_active = true
+			round_time *= 0.88
+			time_remaining = round_time
+			timer_bar.max_value = round_time
+			timer_bar.value = round_time
+			message_label.text += "  •  Twin Trouble: decide quickly!"
+		"Banshee Beatrice":
+			special_effect_active = true
+			round_time *= 0.78
+			time_remaining = round_time
+			timer_bar.max_value = round_time
+			timer_bar.value = round_time
+			message_label.text += "  •  Banshee Wail: patience drains faster!"
+		"The Poltergeist":
+			special_effect_active = true
+			shuffle_room_buttons()
+			message_label.text += "  •  Poltergeist: the room plaques have moved!"
+		"Count Vesper":
+			special_effect_active = true
+			dark_button.text = "🌑 BLACKOUT SUITE\nNo mirrors. No sunrise."
+			message_label.text += "  •  Noble Demand: he expects darkness."
+		"Madame Umbra":
+			special_effect_active = true
+			guest_badge_label.text = "★ LEGENDARY BOSS GUEST ★"
+			guest_badge_label.modulate = Color(1.0, 0.52, 0.18, 1.0)
+			round_time *= 0.70
+			time_remaining = round_time
+			timer_bar.max_value = round_time
+			timer_bar.value = round_time
+			message_label.text += "  •  Eclipse Trial: one mistake could ruin the night."
+		_:
+			pass
+
+
+func shuffle_room_buttons() -> void:
+	var positions: Array[Vector2] = []
+	for button in room_button_order:
+		positions.append(button.position)
+	positions.shuffle()
+	for i in range(room_button_order.size()):
+		room_button_order[i].position = positions[i]
+
+
+func reset_special_mechanics() -> void:
+	if not special_effect_active:
+		return
+	special_effect_active = false
+	setup_button_text()
+
+	# Restore the original scene positions after Poltergeist interference.
+	cold_button.position = Vector2(105.0, 540.0)
+	dark_button.position = Vector2(455.0, 540.0)
+	music_button.position = Vector2(805.0, 540.0)
+
+
+func get_guest_failure_penalty() -> int:
+	var ghost_name := str(current_ghost.get("name", ""))
+	if ghost_name == "Madame Umbra":
+		return 2
+	return 1
