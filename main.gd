@@ -948,8 +948,9 @@ func end_game_won() -> void:
 	timer_bar.value = 0.0
 	rooms_label.text = "A successful night"
 
-	show_end_buttons()
-	animate_end_screen()
+	GameState.finish_shift(score, best_streak, true, get_hotel_rank())
+	await get_tree().create_timer(1.4).timeout
+	get_tree().change_scene_to_file("res://scenes/NightSummary.tscn")
 
 
 func end_game_lost() -> void:
@@ -991,7 +992,9 @@ func end_game_lost() -> void:
 	if game_over_sound.stream:
 		game_over_sound.play()
 
-	animate_end_screen()
+	GameState.finish_shift(score, best_streak, false, get_hotel_rank())
+	await get_tree().create_timer(1.4).timeout
+	get_tree().change_scene_to_file("res://scenes/NightSummary.tscn")
 
 
 func show_end_buttons() -> void:
