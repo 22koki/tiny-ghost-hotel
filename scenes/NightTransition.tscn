@@ -30,6 +30,14 @@ theme_override_font_sizes/font_size = 160
 text = "☾"
 horizontal_alignment = 1
 
+[node name="HotelStage" type="Control" parent="."]
+layout_mode = 0
+offset_left = 250.0
+offset_top = 120.0
+offset_right = 1030.0
+offset_bottom = 610.0
+mouse_filter = 2
+
 [node name="Clock" type="Label" parent="."]
 offset_left = 490.0
 offset_top = 210.0
