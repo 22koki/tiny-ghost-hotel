@@ -24,7 +24,10 @@ extends Control
 
 @onready var enter_hotel_button: Button = $EnterHotelButton
 @onready var how_to_play_button: Button = $HowToPlayButton
+@onready var load_game_button: Button = $LoadGameButton
+@onready var ghost_book_button: Button = $GhostBookButton
 @onready var quit_button: Button = $QuitButton
+@onready var hotel_status_label: Label = $HotelStatusLabel
 
 @onready var how_to_play_overlay: ColorRect = $HowToPlayOverlay
 @onready var how_to_play_panel: Panel = $HowToPlayOverlay/HowToPlayPanel
@@ -62,6 +65,7 @@ func _ready() -> void:
 
 	animate_menu_entrance()
 	start_background_animations()
+	update_progress_ui()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -104,6 +108,16 @@ func connect_buttons() -> void:
 	)
 
 	connect_button(
+		load_game_button,
+		_on_load_game_pressed
+	)
+
+	connect_button(
+		ghost_book_button,
+		_on_ghost_book_pressed
+	)
+
+	connect_button(
 		quit_button,
 		_on_quit_pressed
 	)
@@ -125,7 +139,9 @@ func connect_button(
 func setup_button_animations() -> void:
 	var buttons: Array[Button] = [
 		enter_hotel_button,
+		load_game_button,
 		how_to_play_button,
+		ghost_book_button,
 		quit_button,
 		close_how_to_play_button
 	]
@@ -157,7 +173,9 @@ func animate_menu_entrance() -> void:
 	footer_label.modulate.a = 0.0
 
 	enter_hotel_button.modulate.a = 0.0
+	load_game_button.modulate.a = 0.0
 	how_to_play_button.modulate.a = 0.0
+	ghost_book_button.modulate.a = 0.0
 	quit_button.modulate.a = 0.0
 
 	title_label.scale = Vector2(0.72, 0.72)
@@ -214,10 +232,24 @@ func animate_menu_entrance() -> void:
 	)
 
 	tween.tween_property(
+		load_game_button,
+		"modulate:a",
+		1.0,
+		1.08
+	)
+
+	tween.tween_property(
 		how_to_play_button,
 		"modulate:a",
 		1.0,
 		1.15
+	)
+
+	tween.tween_property(
+		ghost_book_button,
+		"modulate:a",
+		1.0,
+		1.22
 	)
 
 	tween.tween_property(
@@ -646,7 +678,9 @@ func _on_enter_hotel_pressed() -> void:
 
 func play_enter_hotel_transition() -> void:
 	enter_hotel_button.disabled = true
+	load_game_button.disabled = true
 	how_to_play_button.disabled = true
+	ghost_book_button.disabled = true
 	quit_button.disabled = true
 
 	stop_background_animations()
@@ -659,7 +693,9 @@ func play_enter_hotel_transition() -> void:
 		subtitle_label,
 		menu_panel,
 		enter_hotel_button,
+		load_game_button,
 		how_to_play_button,
+		ghost_book_button,
 		quit_button,
 		footer_label,
 		star_one,
@@ -822,3 +858,26 @@ func _on_quit_pressed() -> void:
 		return
 
 	get_tree().quit()
+
+func update_progress_ui() -> void:
+	load_game_button.text = "CONTINUE  •  NIGHT %d" % GameState.current_night
+	hotel_status_label.text = "Night %d   •   %d Coins   •   Reputation %d" % [
+		GameState.current_night,
+		GameState.coins,
+		GameState.hotel_reputation
+	]
+
+
+func _on_load_game_pressed() -> void:
+	if entering_hotel or popup_open:
+		return
+	animate_button_press(load_game_button)
+	await play_enter_hotel_transition()
+	get_tree().change_scene_to_file("res://main.tscn")
+
+
+func _on_ghost_book_pressed() -> void:
+	if entering_hotel or popup_open:
+		return
+	animate_button_press(ghost_book_button)
+	hotel_status_label.text = "Ghost Book coming next  •  %d spirits discovered" % GameState.discovered_ghosts.size()
