@@ -32,7 +32,13 @@ func _ready() -> void:
 	coins_label.text = "+ %d GHOST COINS" % int(data.get("coins_earned", 0))
 	reputation_label.text = "+ %d REPUTATION" % int(data.get("reputation_gain", 0))
 
-	continue_button.text = "BEGIN NIGHT %d" % GameState.current_night if won else "TRY THE NIGHT AGAIN"
+	var final_score: int = int(data.get("score", 0))
+	if final_score < 5:
+		continue_button.text = "ENTER THE FORGOTTEN GRAVEYARD"
+	elif won:
+		continue_button.text = "BEGIN NIGHT %d" % GameState.current_night
+	else:
+		continue_button.text = "TRY THE NIGHT AGAIN"
 	continue_button.pressed.connect(_on_continue)
 	rooms_button.pressed.connect(_on_rooms)
 	book_button.pressed.connect(_on_book)
@@ -42,7 +48,10 @@ func _ready() -> void:
 
 
 func _on_continue() -> void:
-	if bool(GameState.last_night_summary.get("won", false)):
+	var final_score: int = int(GameState.last_night_summary.get("score", 0))
+	if final_score < 5:
+		get_tree().change_scene_to_file("res://scenes/GraveyardChallenge.tscn")
+	elif bool(GameState.last_night_summary.get("won", false)):
 		get_tree().change_scene_to_file("res://scenes/NightTransition.tscn")
 	else:
 		get_tree().change_scene_to_file("res://main.tscn")
