@@ -8,6 +8,7 @@ var hotel_reputation: int = 0
 var discovered_ghosts: Array[String] = []
 var last_night_summary: Dictionary = {}
 var unlocked_rooms: Array[String] = ["cold_room", "dark_room", "music_room"]
+var room_occupants: Dictionary = {}
 var room_levels: Dictionary = {
 	"cold_room": 1,
 	"dark_room": 1,
@@ -36,6 +37,20 @@ func unlock_room(room_id: String) -> void:
 
 func is_room_unlocked(room_id: String) -> bool:
 	return room_id in unlocked_rooms
+
+func check_in_guest(room_id: String, guest_name: String, guest_icon: String = "👻") -> void:
+	room_occupants[room_id] = {
+		"name": guest_name,
+		"icon": guest_icon
+	}
+	save_progress()
+
+func clear_room_occupants() -> void:
+	room_occupants.clear()
+	save_progress()
+
+func get_room_occupant(room_id: String) -> Dictionary:
+	return room_occupants.get(room_id, {})
 
 func upgrade_room(room_id: String, cost: int) -> bool:
 	if not is_room_unlocked(room_id):
@@ -86,6 +101,7 @@ func reset_progress() -> void:
 	hotel_reputation = 0
 	discovered_ghosts.clear()
 	last_night_summary = {}
+	room_occupants.clear()
 	unlocked_rooms = ["cold_room", "dark_room", "music_room"]
 	room_levels = {
 		"cold_room": 1,
@@ -107,7 +123,8 @@ func save_progress() -> void:
 		"discovered_ghosts": discovered_ghosts,
 		"last_night_summary": last_night_summary,
 		"unlocked_rooms": unlocked_rooms,
-		"room_levels": room_levels
+		"room_levels": room_levels,
+		"room_occupants": room_occupants
 	}
 	file.store_string(JSON.stringify(payload))
 
@@ -135,6 +152,8 @@ func load_progress() -> void:
 	unlocked_rooms.clear()
 	for room_id in parsed.get("unlocked_rooms", ["cold_room", "dark_room", "music_room"]):
 		unlocked_rooms.append(str(room_id))
+
+	room_occupants = parsed.get("room_occupants", {})
 
 	room_levels = parsed.get("room_levels", {
 		"cold_room": 1,
