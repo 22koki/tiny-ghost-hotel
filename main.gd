@@ -395,6 +395,9 @@ func spawn_new_ghost() -> void:
 	current_round += 1
 	current_ghost = ghost_pool.pop_back()
 
+	var ghost_id := str(current_ghost.get("name", "unknown")).to_lower().replace(" ", "_")
+	GameState.discover_ghost(ghost_id)
+
 	update_round_label()
 
 	var ghost_name := str(
