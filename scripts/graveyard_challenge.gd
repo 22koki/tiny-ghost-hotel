@@ -120,7 +120,7 @@ func _build_real_graveyard() -> void:
 	gate_left.position = Vector2(-8,360)
 	gate_left.size = Vector2(180,220)
 	gate_left.add_theme_font_size_override("font_size", 30)
-	gate_left.add_theme_color_override("font_color", Color(0.10,0.10,0.12,0.95))
+	gate_left.add_theme_color_override("font_color", Color(0.12,0.08,0.18,0.98))
 	add_child(gate_left)
 
 	var gate_right: Label = Label.new()
@@ -128,22 +128,22 @@ func _build_real_graveyard() -> void:
 	gate_right.position = Vector2(1110,360)
 	gate_right.size = Vector2(180,220)
 	gate_right.add_theme_font_size_override("font_size", 30)
-	gate_right.add_theme_color_override("font_color", Color(0.10,0.10,0.12,0.95))
+	gate_right.add_theme_color_override("font_color", Color(0.12,0.08,0.18,0.98))
 	add_child(gate_right)
 
 	var crypt: ColorRect = ColorRect.new()
 	crypt.position = Vector2(520,330)
 	crypt.size = Vector2(250,190)
-	crypt.color = Color(0.11,0.115,0.12,0.86)
+	crypt.color = Color(0.16,0.10,0.20,0.92)
 	add_child(crypt)
 	var crypt_roof: Polygon2D = Polygon2D.new()
 	crypt_roof.polygon = PackedVector2Array([Vector2(495,335),Vector2(645,235),Vector2(795,335)])
-	crypt_roof.color = Color(0.075,0.075,0.085,0.95)
+	crypt_roof.color = Color(0.10,0.05,0.14,0.98)
 	add_child(crypt_roof)
 	var crypt_door: ColorRect = ColorRect.new()
 	crypt_door.position = Vector2(600,405)
 	crypt_door.size = Vector2(90,115)
-	crypt_door.color = Color(0.025,0.025,0.035,0.96)
+	crypt_door.color = Color(0.055,0.02,0.08,0.98)
 	add_child(crypt_door)
 
 	for i in range(17):
@@ -153,7 +153,7 @@ func _build_real_graveyard() -> void:
 		stone.size = Vector2(62,82)
 		stone.rotation = deg_to_rad(float((i % 5) - 2) * 2.5)
 		stone.add_theme_font_size_override("font_size", 50 - (i % 3) * 4)
-		stone.add_theme_color_override("font_color", Color(0.20,0.22,0.23,0.90))
+		stone.add_theme_color_override("font_color", Color(0.28,0.31,0.42,0.96))
 		add_child(stone)
 
 	for i in range(6):
@@ -162,7 +162,7 @@ func _build_real_graveyard() -> void:
 		tree.position = Vector2(10 + i * 235, 180 + (i % 2) * 75)
 		tree.size = Vector2(160,310)
 		tree.add_theme_font_size_override("font_size", 24)
-		tree.add_theme_color_override("font_color", Color(0.055,0.045,0.05,0.92))
+		tree.add_theme_color_override("font_color", Color(0.07,0.05,0.10,0.96))
 		add_child(tree)
 
 	for pos in [Vector2(5,130),Vector2(1080,130),Vector2(60,455),Vector2(1040,450)]:
@@ -216,7 +216,7 @@ func _spawn_level_relics() -> void:
 		button.position = spots[i]
 		button.size = Vector2(target_size,target_size)
 		button.flat = true
-		button.modulate = Color(0.67,0.67,0.70,target_alpha)
+		button.modulate = Color(0.82,0.88,1.0,target_alpha)
 		button.add_theme_font_size_override("font_size", int(target_size * 0.52))
 		button.mouse_entered.connect(_on_relic_hover.bind(button))
 		button.mouse_exited.connect(_on_relic_exit.bind(button))
@@ -245,7 +245,7 @@ func _spawn_decoys() -> void:
 		decoy.position = HIDING_SPOTS[(i * 3 + graveyard_level) % HIDING_SPOTS.size()] + Vector2((i % 3) * 22,-18 + (i % 2) * 30)
 		decoy.size = Vector2(42,42)
 		decoy.flat = true
-		decoy.modulate = Color(0.55,0.56,0.58,0.17)
+		decoy.modulate = Color(0.68,0.44,0.82,0.22)
 		decoy.add_theme_font_size_override("font_size",22)
 		decoy.pressed.connect(_on_decoy_pressed.bind(decoy))
 		add_child(decoy)
@@ -256,7 +256,7 @@ func _on_decoy_pressed(decoy: Button) -> void:
 	message.text = "A FALSE RELIC! The graveyard steals 3 seconds."
 	time_left = maxf(0.0,time_left - 3.0)
 	decoy.disabled = true
-	decoy.modulate = Color(0.55,0.08,0.08,0.55)
+	decoy.modulate = Color(0.95,0.12,0.18,0.72)
 	_flash_screen(0.22)
 	if graveyard_level >= 4:
 		_spawn_jump_scare()
@@ -278,7 +278,7 @@ func _on_relic_found(button: Button,relic_name: String) -> void:
 	if button.disabled or challenge_complete:
 		return
 	button.disabled = true
-	button.modulate = Color(1.0,0.76,0.30,1.0)
+	button.modulate = Color(1.0,0.74,0.18,1.0)
 	button.scale = Vector2(1.35,1.35)
 	found_count += 1
 	counter.text = "RELICS  %d / %d" % [found_count,required_count]
@@ -339,7 +339,7 @@ func _start_fog() -> void:
 		fog.position = Vector2(-650 - i * 330,455 + (i % 3) * 70)
 		fog.size = Vector2(850,150)
 		fog.add_theme_font_size_override("font_size",58)
-		fog.add_theme_color_override("font_color",Color(0.68,0.72,0.78,0.20))
+		fog.add_theme_color_override("font_color",Color(0.56,0.72,0.92,0.26))
 		add_child(fog)
 		var drift: Tween = create_tween()
 		drift.set_loops()
