@@ -70,6 +70,14 @@ func _room_button_text(room_id: String, data: Dictionary) -> String:
 	var unlocked := GameState.is_room_unlocked(room_id)
 	var level := int(GameState.room_levels.get(room_id, 1))
 	if unlocked:
+		var occupant := GameState.get_room_occupant(room_id)
+		if not occupant.is_empty():
+			return "%s  %s\n%s %s\n● OCCUPIED" % [
+				str(data.get("icon", "✦")),
+				str(data.get("short_name", "Room")),
+				str(occupant.get("icon", "👻")),
+				str(occupant.get("name", "Guest"))
+			]
 		return "%s  %s\nLEVEL %d\n● READY" % [
 			str(data.get("icon", "✦")),
 			str(data.get("short_name", "Room")),
@@ -94,7 +102,18 @@ func _on_room_selected(room_id: String) -> void:
 	var best_for: Array = data.get("best_for", [])
 
 	detail_title.text = "%s  %s" % [str(data.get("icon", "✦")), str(data.get("name", "Room"))]
-	occupancy_label.text = "STATUS: READY FOR GUESTS" if unlocked else "STATUS: SEALED"
+	if unlocked:
+		var occupant := GameState.get_room_occupant(room_id)
+		occupancy_label.text = (
+			"STATUS: OCCUPIED • %s %s" % [
+				str(occupant.get("icon", "👻")),
+				str(occupant.get("name", "Guest"))
+			]
+			if not occupant.is_empty()
+			else "STATUS: READY FOR GUESTS"
+		)
+	else:
+		occupancy_label.text = "STATUS: SEALED"
 	detail_body.text = "%s\n\nBest for: %s\n\n%s" % [
 		str(data.get("theme", "")),
 		", ".join(best_for),
