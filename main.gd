@@ -176,6 +176,114 @@ var ghosts: Array[Dictionary] = [
 		"base_points": 1,
 		"vip": false,
 		"icon": "🎶👻"
+	},
+	{
+		"name": "Count Vesper",
+		"preference": "dark",
+		"intro": "requests blackout curtains and no mirrors",
+		"mood": "Composed",
+		"personality": "Aristocratic",
+		"patience": 6.0,
+		"base_points": 2,
+		"vip": true,
+		"unlock_night": 4,
+		"icon": "🦇👻"
+	},
+	{
+		"name": "Mabel Mourning",
+		"preference": "music",
+		"intro": "asks for a room where old wedding songs still play",
+		"mood": "Melancholy",
+		"personality": "Romantic",
+		"patience": 7.0,
+		"base_points": 2,
+		"vip": false,
+		"unlock_night": 4,
+		"icon": "👰👻"
+	},
+	{
+		"name": "Professor Cog",
+		"preference": "music",
+		"intro": "ticks softly and listens for mechanical rhythms",
+		"mood": "Focused",
+		"personality": "Inventive",
+		"patience": 6.5,
+		"base_points": 2,
+		"vip": false,
+		"unlock_night": 5,
+		"icon": "⚙️👻"
+	},
+	{
+		"name": "The Headless Traveller",
+		"preference": "cold",
+		"intro": "has arrived from a very long road and wants silence",
+		"mood": "Weary",
+		"personality": "Stoic",
+		"patience": 5.5,
+		"base_points": 2,
+		"vip": false,
+		"unlock_night": 5,
+		"icon": "🎩👻"
+	},
+	{
+		"name": "The Bell Twins",
+		"preference": "music",
+		"intro": "finish each other's melodies and refuse to separate",
+		"mood": "Excited",
+		"personality": "Mischievous",
+		"patience": 5.0,
+		"base_points": 3,
+		"vip": false,
+		"unlock_night": 6,
+		"icon": "🔔👻👻"
+	},
+	{
+		"name": "Banshee Beatrice",
+		"preference": "dark",
+		"intro": "warns that bright rooms make her voice much louder",
+		"mood": "Restless",
+		"personality": "Dramatic",
+		"patience": 4.8,
+		"base_points": 3,
+		"vip": false,
+		"unlock_night": 6,
+		"icon": "📣👻"
+	},
+	{
+		"name": "Little Lucien",
+		"preference": "cold",
+		"intro": "clutches a wooden toy and asks for a quiet chilly room",
+		"mood": "Shy",
+		"personality": "Gentle",
+		"patience": 8.5,
+		"base_points": 2,
+		"vip": false,
+		"unlock_night": 7,
+		"icon": "🧸👻"
+	},
+	{
+		"name": "The Poltergeist",
+		"preference": "dark",
+		"intro": "has already moved three lamps without touching them",
+		"mood": "Chaotic",
+		"personality": "Unruly",
+		"patience": 4.2,
+		"base_points": 3,
+		"vip": false,
+		"unlock_night": 7,
+		"icon": "🪑👻"
+	},
+	{
+		"name": "Madame Umbra",
+		"preference": "dark",
+		"intro": "arrives beneath an eclipse and expects royal treatment",
+		"mood": "Severe",
+		"personality": "Regal",
+		"patience": 4.0,
+		"base_points": 4,
+		"vip": true,
+		"unlock_night": 8,
+		"icon": "🌘👑👻"
 	}
 ]
 
@@ -1227,6 +1335,9 @@ func get_patience_multiplier() -> float:
 func get_available_ghosts() -> Array[Dictionary]:
 	var available: Array[Dictionary] = []
 	for ghost in ghosts:
+		var unlock_night := int(ghost.get("unlock_night", 1))
+		if GameState.current_night < unlock_night:
+			continue
 		var is_vip := bool(ghost.get("vip", false))
 		if is_vip and GameState.current_night < 3:
 			continue
