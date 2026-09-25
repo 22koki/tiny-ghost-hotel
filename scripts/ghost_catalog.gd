@@ -91,6 +91,96 @@ const GHOSTS := {
 		"preference": "Music rooms",
 		"dislikes": "Being ignored",
 		"lore": "Wisp wanders the corridors collecting tunes, gossip and loose room keys."
+	},
+	"count_vesper": {
+		"name": "Count Vesper",
+		"icon": "🦇👻",
+		"rarity": "Rare",
+		"personality": "Aristocratic",
+		"mood": "Composed",
+		"preference": "Dark rooms",
+		"dislikes": "Mirrors and daylight",
+		"lore": "A nocturnal noble who signs the registry only after sunset and never seems to cast a reflection."
+	},
+	"mabel_mourning": {
+		"name": "Mabel Mourning",
+		"icon": "👰👻",
+		"rarity": "Uncommon",
+		"personality": "Romantic",
+		"mood": "Melancholy",
+		"preference": "Music rooms",
+		"dislikes": "Silence",
+		"lore": "A spectral bride who has been waiting for the final dance from a wedding that ended long ago."
+	},
+	"professor_cog": {
+		"name": "Professor Cog",
+		"icon": "⚙️👻",
+		"rarity": "Uncommon",
+		"personality": "Inventive",
+		"mood": "Focused",
+		"preference": "Music rooms",
+		"dislikes": "Broken clocks",
+		"lore": "An eccentric inventor whose pocket watch still ticks despite having no hands."
+	},
+	"the_headless_traveller": {
+		"name": "The Headless Traveller",
+		"icon": "🎩👻",
+		"rarity": "Rare",
+		"personality": "Stoic",
+		"mood": "Weary",
+		"preference": "Cold rooms",
+		"dislikes": "Crowded halls",
+		"lore": "A tireless wanderer who has crossed forgotten roads for centuries in search of one peaceful night."
+	},
+	"the_bell_twins": {
+		"name": "The Bell Twins",
+		"icon": "🔔👻👻",
+		"rarity": "Rare",
+		"personality": "Mischievous",
+		"mood": "Excited",
+		"preference": "Music rooms",
+		"dislikes": "Being separated",
+		"lore": "Two inseparable spirits who announce their arrival with bells that ring from empty corridors."
+	},
+	"banshee_beatrice": {
+		"name": "Banshee Beatrice",
+		"icon": "📣👻",
+		"rarity": "Rare",
+		"personality": "Dramatic",
+		"mood": "Restless",
+		"preference": "Dark rooms",
+		"dislikes": "Bright light",
+		"lore": "Beatrice insists she is not screaming; the hotel walls are simply too acoustically sensitive."
+	},
+	"little_lucien": {
+		"name": "Little Lucien",
+		"icon": "🧸👻",
+		"rarity": "Uncommon",
+		"personality": "Gentle",
+		"mood": "Shy",
+		"preference": "Cold rooms",
+		"dislikes": "Loud guests",
+		"lore": "A quiet young spirit who never travels without the same worn wooden toy."
+	},
+	"the_poltergeist": {
+		"name": "The Poltergeist",
+		"icon": "🪑👻",
+		"rarity": "Rare",
+		"personality": "Unruly",
+		"mood": "Chaotic",
+		"preference": "Dark rooms",
+		"dislikes": "Rules",
+		"lore": "Nobody knows its real name. Furniture begins moving several minutes before it enters the lobby."
+	},
+	"madame_umbra": {
+		"name": "Madame Umbra",
+		"icon": "🌘👑👻",
+		"rarity": "Legendary",
+		"personality": "Regal",
+		"mood": "Severe",
+		"preference": "Dark rooms",
+		"dislikes": "Ordinary accommodation",
+		"lore": "A legendary eclipse spirit whose arrival is said to mark the beginning of the hotel's most difficult nights."
 	}
 }
 
