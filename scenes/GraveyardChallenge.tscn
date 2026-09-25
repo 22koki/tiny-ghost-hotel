@@ -1,0 +1,90 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/graveyard_challenge.gd" id="1"]
+
+[node name="GraveyardChallenge" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Sky" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.018, 0.035, 1)
+
+[node name="Moon" type="Label" parent="."]
+offset_left = 930.0
+offset_top = 35.0
+offset_right = 1210.0
+offset_bottom = 280.0
+theme_override_colors/font_color = Color(0.76, 0.78, 0.72, 0.38)
+theme_override_font_sizes/font_size = 150
+text = "☾"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="."]
+offset_left = 250.0
+offset_top = 28.0
+offset_right = 1030.0
+offset_bottom = 84.0
+theme_override_colors/font_color = Color(0.92, 0.72, 0.35, 1)
+theme_override_font_sizes/font_size = 34
+text = "THE FORGOTTEN GRAVEYARD"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="."]
+offset_left = 235.0
+offset_top = 88.0
+offset_right = 1045.0
+offset_bottom = 128.0
+theme_override_colors/font_color = Color(0.75, 0.76, 0.79, 1)
+theme_override_font_sizes/font_size = 17
+text = "Your shift score was too low. Recover all 10 cursed relics to return."
+horizontal_alignment = 1
+
+[node name="Counter" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 35.0
+offset_right = 260.0
+offset_bottom = 75.0
+theme_override_colors/font_color = Color(0.94, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 20
+text = "RELICS  0 / 10"
+
+[node name="Message" type="Label" parent="."]
+offset_left = 250.0
+offset_top = 650.0
+offset_right = 1030.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.84, 0.80, 0.72, 1)
+theme_override_font_sizes/font_size = 17
+text = "Something watches from behind the stones..."
+horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="."]
+offset_left = 1010.0
+offset_top = 638.0
+offset_right = 1240.0
+offset_bottom = 692.0
+theme_override_font_sizes/font_size = 17
+text = "THE GATE IS SEALED"
+disabled = true
+
+[node name="Flash" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.75, 0.82, 1, 1)
+modulate = Color(1, 1, 1, 0)
