@@ -9,6 +9,8 @@ var discovered_ghosts: Array[String] = []
 var last_night_summary: Dictionary = {}
 var unlocked_rooms: Array[String] = ["cold_room", "dark_room", "music_room"]
 var room_occupants: Dictionary = {}
+var best_hotel_rank: String = "Creaky Inn"
+var previous_hotel_rank: String = "Creaky Inn"
 var room_levels: Dictionary = {
 	"cold_room": 1,
 	"dark_room": 1,
@@ -76,7 +78,9 @@ func finish_shift(score: int, best_streak: int, won: bool, rank: String) -> Dict
 	if won:
 		coins_earned += 50
 	var reputation_gain := 1 if won else 0
-	var completed_night := current_night
+	var completed_night: int = current_night
+	previous_hotel_rank = best_hotel_rank
+	best_hotel_rank = rank if won else best_hotel_rank
 
 	coins += coins_earned
 	if won:
@@ -90,7 +94,9 @@ func finish_shift(score: int, best_streak: int, won: bool, rank: String) -> Dict
 		"won": won,
 		"rank": rank,
 		"coins_earned": coins_earned,
-		"reputation_gain": reputation_gain
+		"reputation_gain": reputation_gain,
+		"previous_rank": previous_hotel_rank,
+		"rank_changed": won and rank != previous_hotel_rank
 	}
 	save_progress()
 	return last_night_summary
@@ -99,6 +105,8 @@ func reset_progress() -> void:
 	coins = 0
 	current_night = 1
 	hotel_reputation = 0
+	best_hotel_rank = "Creaky Inn"
+	previous_hotel_rank = "Creaky Inn"
 	discovered_ghosts.clear()
 	last_night_summary = {}
 	room_occupants.clear()
@@ -120,6 +128,8 @@ func save_progress() -> void:
 		"coins": coins,
 		"current_night": current_night,
 		"hotel_reputation": hotel_reputation,
+		"best_hotel_rank": best_hotel_rank,
+		"previous_hotel_rank": previous_hotel_rank,
 		"discovered_ghosts": discovered_ghosts,
 		"last_night_summary": last_night_summary,
 		"unlocked_rooms": unlocked_rooms,
@@ -143,6 +153,8 @@ func load_progress() -> void:
 	coins = int(parsed.get("coins", 0))
 	current_night = int(parsed.get("current_night", 1))
 	hotel_reputation = int(parsed.get("hotel_reputation", 0))
+	best_hotel_rank = str(parsed.get("best_hotel_rank", "Creaky Inn"))
+	previous_hotel_rank = str(parsed.get("previous_hotel_rank", best_hotel_rank))
 	last_night_summary = parsed.get("last_night_summary", {})
 
 	discovered_ghosts.clear()
