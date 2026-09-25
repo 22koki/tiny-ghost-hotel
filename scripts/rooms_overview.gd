@@ -37,8 +37,8 @@ func _ready() -> void:
 
 func _build_hotel_map() -> void:
 	for room_id in RoomCatalog.get_all_room_ids():
-		var data := RoomCatalog.get_room(room_id)
-		var button := Button.new()
+		var data: Dictionary = RoomCatalog.get_room(room_id)
+		var button: Button = Button.new()
 		button.position = MAP_POSITIONS.get(room_id, Vector2.ZERO)
 		button.size = Vector2(175, 105)
 		button.text = _room_button_text(room_id, data)
@@ -53,7 +53,7 @@ func _build_hotel_map() -> void:
 		room_buttons[room_id] = button
 
 func _make_room_style(hovered: bool, unlocked: bool) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
+	var style: StyleBoxFlat = StyleBoxFlat.new()
 	if unlocked:
 		style.bg_color = Color(0.16, 0.075, 0.035, 0.98) if not hovered else Color(0.28, 0.13, 0.05, 1.0)
 		style.border_color = Color(0.69, 0.44, 0.18, 1.0) if not hovered else Color(1.0, 0.72, 0.30, 1.0)
@@ -67,10 +67,10 @@ func _make_room_style(hovered: bool, unlocked: bool) -> StyleBoxFlat:
 	return style
 
 func _room_button_text(room_id: String, data: Dictionary) -> String:
-	var unlocked := GameState.is_room_unlocked(room_id)
-	var level := int(GameState.room_levels.get(room_id, 1))
+	var unlocked: bool = GameState.is_room_unlocked(room_id)
+	var level: int = int(GameState.room_levels.get(room_id, 1))
 	if unlocked:
-		var occupant := GameState.get_room_occupant(room_id)
+		var occupant: Dictionary = GameState.get_room_occupant(room_id)
 		if not occupant.is_empty():
 			return "%s  %s\n%s %s\n● OCCUPIED" % [
 				str(data.get("icon", "✦")),
@@ -90,20 +90,20 @@ func _room_button_text(room_id: String, data: Dictionary) -> String:
 	]
 
 func _select_first_room() -> void:
-	var ids := RoomCatalog.get_all_room_ids()
+	var ids: Array[String] = RoomCatalog.get_all_room_ids()
 	if not ids.is_empty():
 		_on_room_selected(ids[0])
 
 func _on_room_selected(room_id: String) -> void:
 	selected_room_id = room_id
-	var data := RoomCatalog.get_room(room_id)
-	var unlocked := GameState.is_room_unlocked(room_id)
-	var level := int(GameState.room_levels.get(room_id, 1))
+	var data: Dictionary = RoomCatalog.get_room(room_id)
+	var unlocked: bool = GameState.is_room_unlocked(room_id)
+	var level: int = int(GameState.room_levels.get(room_id, 1))
 	var best_for: Array = data.get("best_for", [])
 
 	detail_title.text = "%s  %s" % [str(data.get("icon", "✦")), str(data.get("name", "Room"))]
 	if unlocked:
-		var occupant := GameState.get_room_occupant(room_id)
+		var occupant: Dictionary = GameState.get_room_occupant(room_id)
 		occupancy_label.text = (
 			"STATUS: OCCUPIED • %s %s" % [
 				str(occupant.get("icon", "👻")),
@@ -123,15 +123,15 @@ func _on_room_selected(room_id: String) -> void:
 	if unlocked:
 		var costs: Array = data.get("upgrade_costs", [])
 		if level - 1 < costs.size():
-			var cost := int(costs[level - 1])
+			var cost: int = int(costs[level - 1])
 			action_button.text = "UPGRADE ROOM • %d COINS" % cost
 			action_button.disabled = GameState.coins < cost
 		else:
 			action_button.text = "MAXIMUM LEVEL"
 			action_button.disabled = true
 	else:
-		var night_required := int(data.get("unlock_night", 1))
-		var cost := int(data.get("unlock_cost", 0))
+		var night_required: int = int(data.get("unlock_night", 1))
+		var cost: int = int(data.get("unlock_cost", 0))
 		if GameState.current_night < night_required:
 			action_button.text = "SEALED UNTIL NIGHT %d" % night_required
 			action_button.disabled = true
@@ -143,16 +143,16 @@ func _on_action_pressed() -> void:
 	if selected_room_id.is_empty():
 		return
 
-	var data := RoomCatalog.get_room(selected_room_id)
+	var data: Dictionary = RoomCatalog.get_room(selected_room_id)
 	if GameState.is_room_unlocked(selected_room_id):
-		var level := int(GameState.room_levels.get(selected_room_id, 1))
+		var level: int = int(GameState.room_levels.get(selected_room_id, 1))
 		var costs: Array = data.get("upgrade_costs", [])
 		if level - 1 >= costs.size():
 			return
 		GameState.upgrade_room(selected_room_id, int(costs[level - 1]))
 	else:
-		var night_required := int(data.get("unlock_night", 1))
-		var cost := int(data.get("unlock_cost", 0))
+		var night_required: int = int(data.get("unlock_night", 1))
+		var cost: int = int(data.get("unlock_cost", 0))
 		if GameState.current_night < night_required:
 			return
 		if GameState.spend_coins(cost):
