@@ -660,7 +660,7 @@ func check_room(selected_room: String) -> void:
 		end_game_lost()
 		return
 
-	if current_round >= MAX_ROUNDS:
+	if current_round >= max_rounds:
 		end_game_won()
 		return
 
@@ -868,7 +868,7 @@ func handle_timeout() -> void:
 		end_game_lost()
 		return
 
-	if current_round >= MAX_ROUNDS:
+	if current_round >= max_rounds:
 		end_game_won()
 		return
 
