@@ -896,7 +896,7 @@ func _on_ghost_book_pressed() -> void:
 	if entering_hotel or popup_open:
 		return
 	animate_button_press(ghost_book_button)
-	hotel_status_label.text = "Ghost Book coming next  •  %d spirits discovered" % GameState.discovered_ghosts.size()
+	get_tree().change_scene_to_file("res://scenes/GhostBook.tscn")
 
 
 func _on_rooms_pressed() -> void:
