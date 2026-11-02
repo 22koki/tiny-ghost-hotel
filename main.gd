@@ -22,6 +22,7 @@ var max_rounds: int = BASE_ROUNDS
 var current_event: Dictionary = {}
 var room_button_order: Array[Button] = []
 var special_effect_active: bool = false
+var current_specialty_room_id: String = ""
 var current_ghost: Dictionary = {}
 var ghost_pool: Array[Dictionary] = []
 
@@ -70,6 +71,7 @@ var ghost_float_tween: Tween
 @onready var cold_button: Button = $ColdRoomButton
 @onready var dark_button: Button = $DarkRoomButton
 @onready var music_button: Button = $MusicRoomButton
+@onready var specialty_room_button: Button = $SpecialtyRoomButton
 
 @onready var restart_button: Button = $RestartButton
 @onready var menu_button: Button = $MenuButton
@@ -351,6 +353,7 @@ func setup_button_text() -> void:
 	cold_button.text = "❄ COLD ROOM · LV %d\nQuiet and chilly" % get_core_room_level("cold")
 	dark_button.text = "🌑 DARK ROOM · LV %d\nDim and restful" % get_core_room_level("dark")
 	music_button.text = "🎵 MUSIC ROOM · LV %d\nSoft spooky tunes" % get_core_room_level("music")
+	specialty_room_button.text = "✨ SPECIALTY ROOM\nMATCH BONUS"
 
 	restart_button.text = "PLAY AGAIN"
 	menu_button.text = "MAIN MENU"
@@ -370,6 +373,11 @@ func connect_buttons() -> void:
 	connect_button(
 		music_button,
 		_on_music_room_pressed
+	)
+
+	connect_button(
+		specialty_room_button,
+		_on_specialty_room_pressed
 	)
 
 	connect_button(
@@ -396,6 +404,7 @@ func setup_button_animations() -> void:
 		cold_button,
 		dark_button,
 		music_button,
+		specialty_room_button,
 		restart_button,
 		menu_button
 	]
@@ -433,22 +442,50 @@ func get_core_room_level(preference: String) -> int:
 
 func get_guest_room_bonuses(guest: Dictionary) -> Dictionary:
 	var core_level := get_core_room_level(str(guest.get("preference", "")))
-	var specialty_room_id := get_guest_specialty_room_id(guest)
 	var patience_bonus := float(maxi(0, core_level - 1)) * 0.4
 	var score_bonus := 1 if core_level >= 3 else 0
-
-	if not specialty_room_id.is_empty():
-		var specialty_level := int(GameState.room_levels.get(specialty_room_id, 1))
-		patience_bonus += 0.5 + float(maxi(0, specialty_level - 1)) * 0.25
-		score_bonus += 1
-		if specialty_level >= 3:
-			score_bonus += 1
-
 	return {
 		"patience": patience_bonus,
-		"score": score_bonus,
-		"specialty_room_id": specialty_room_id
+		"score": score_bonus
 	}
+
+func get_specialty_score_bonus(room_id: String) -> int:
+	if room_id.is_empty():
+		return 0
+	var level := int(GameState.room_levels.get(room_id, 1))
+	return 2 + (1 if level >= 3 else 0)
+
+func update_specialty_room_choice(specialty_match: Dictionary) -> void:
+	current_specialty_room_id = str(specialty_match.get("room_id", ""))
+	specialty_room_button.visible = not current_specialty_room_id.is_empty()
+	if not specialty_room_button.visible:
+		current_specialty_room_id = ""
+		_layout_room_buttons(false)
+		return
+
+	var room: Dictionary = RoomCatalog.get_room(current_specialty_room_id)
+	specialty_room_button.text = "%s %s\nMATCH BONUS  +%d" % [
+		str(room.get("icon", "✦")),
+		str(room.get("short_name", "SPECIALTY ROOM")),
+		get_specialty_score_bonus(current_specialty_room_id)
+	]
+	_layout_room_buttons(true)
+
+func _layout_room_buttons(show_specialty: bool) -> void:
+	if show_specialty:
+		var buttons: Array[Button] = [cold_button, dark_button, music_button]
+		for index in range(buttons.size()):
+			buttons[index].position = Vector2(70.0 + float(index) * 290.0, 590.0)
+			buttons[index].size = Vector2(270.0, 100.0)
+		specialty_room_button.position = Vector2(940.0, 590.0)
+		specialty_room_button.size = Vector2(270.0, 100.0)
+	else:
+		cold_button.position = Vector2(105.0, 590.0)
+		dark_button.position = Vector2(495.0, 590.0)
+		music_button.position = Vector2(885.0, 590.0)
+		cold_button.size = Vector2(290.0, 100.0)
+		dark_button.size = Vector2(290.0, 100.0)
+		music_button.size = Vector2(290.0, 100.0)
 
 
 func get_guest_specialty_match(guest: Dictionary) -> Dictionary:
@@ -553,6 +590,9 @@ func reset_game_data() -> void:
 
 	current_round = 0
 	current_ghost = {}
+	current_specialty_room_id = ""
+	specialty_room_button.visible = false
+	_layout_room_buttons(false)
 
 	ghost_pool = get_available_ghosts()
 	ghost_pool.shuffle()
@@ -734,13 +774,15 @@ func spawn_new_ghost() -> void:
 		]
 
 	var specialty_match := get_guest_specialty_match(current_ghost)
+	update_specialty_room_choice(specialty_match)
 	if not specialty_match.is_empty():
-		var specialty_room: Dictionary = RoomCatalog.get_room(str(specialty_match.get("room_id", "")))
-		message_label.text = "Mood: %s  |  Personality: %s\nRoom clue: %s guests suit %s%s" % [
+		var specialty_room: Dictionary = RoomCatalog.get_room(current_specialty_room_id)
+		message_label.text = "Mood: %s  |  Personality: %s\nRoom clue: %s guests favor %s. Choose it for +%d points.%s" % [
 			mood,
 			personality,
 			str(specialty_match.get("trait", "specialty")),
-			str(specialty_room.get("short_name", "a specialty room")),
+			str(specialty_room.get("short_name", "the specialty room")),
+			get_specialty_score_bonus(current_specialty_room_id),
 			support_message
 		]
 	elif not support_message.is_empty():
@@ -888,6 +930,7 @@ func set_room_buttons_disabled(
 	cold_button.disabled = disabled
 	dark_button.disabled = disabled
 	music_button.disabled = disabled
+	specialty_room_button.disabled = disabled
 
 
 func check_room(selected_room: String) -> void:
@@ -910,22 +953,19 @@ func check_room(selected_room: String) -> void:
 	reset_special_mechanics()
 	stop_game_ghost_animation()
 
-	var correct_room := str(
-		current_ghost.get(
-			"preference",
-			""
-		)
-	)
+	var correct_room := str(current_ghost.get("preference", ""))
+	var selected_specialty := not current_specialty_room_id.is_empty() and selected_room == current_specialty_room_id
+	var selected_core := selected_room == correct_room
 
-	if selected_room == correct_room:
-		var room_id := get_guest_room_assignment(current_ghost)
-		if not room_id.is_empty():
+	if selected_core or selected_specialty:
+		var assigned_room_id := selected_room if selected_specialty else get_core_room_id(correct_room)
+		if not assigned_room_id.is_empty():
 			GameState.check_in_guest(
-				room_id,
+				assigned_room_id,
 				str(current_ghost.get("name", "Unknown Guest")),
 				str(current_ghost.get("icon", "👻"))
 			)
-		await handle_correct_answer()
+		await handle_correct_answer(selected_specialty, assigned_room_id)
 	else:
 		await handle_wrong_answer()
 
@@ -940,14 +980,14 @@ func check_room(selected_room: String) -> void:
 	spawn_new_ghost()
 
 
-func handle_correct_answer() -> void:
+func handle_correct_answer(specialty_selected: bool = false, assigned_room_id: String = "") -> void:
 	streak += 1
 	best_streak = maxi(
 		best_streak,
 		streak
 	)
 
-	var gained_score := calculate_score_gain()
+	var gained_score := calculate_score_gain(specialty_selected)
 	score += gained_score
 
 	update_score_label()
@@ -961,15 +1001,18 @@ func handle_correct_answer() -> void:
 			"The ghost"
 		)
 	)
-	var assigned_room: Dictionary = RoomCatalog.get_room(get_guest_room_assignment(current_ghost))
+	var assigned_room: Dictionary = RoomCatalog.get_room(assigned_room_id)
 	var room_name := str(assigned_room.get("short_name", "room"))
+	var success_text := get_success_message()
+	if specialty_selected:
+		success_text = "SPECIALTY MATCH! " + success_text
 
 	message_label.text = (
 		"%s is delighted in the %s! %s  +%d points"
 		% [
 			ghost_name,
 			room_name,
-			get_success_message(),
+			success_text,
 			gained_score
 		]
 	)
@@ -981,7 +1024,7 @@ func handle_correct_answer() -> void:
 	).timeout
 
 
-func calculate_score_gain() -> int:
+func calculate_score_gain(specialty_selected: bool = false) -> int:
 	var gained_score := int(
 		current_ghost.get(
 			"base_points",
@@ -989,6 +1032,8 @@ func calculate_score_gain() -> int:
 		)
 	)
 	gained_score += int(get_guest_room_bonuses(current_ghost).get("score", 0))
+	if specialty_selected:
+		gained_score += get_specialty_score_bonus(current_specialty_room_id)
 
 	if streak >= 3:
 		gained_score += 1
@@ -1204,6 +1249,7 @@ func end_game_won() -> void:
 
 	stop_game_ghost_animation()
 	set_room_buttons_disabled(true)
+	specialty_room_button.visible = false
 	update_high_score()
 
 	lobby_title.text = "NIGHT SHIFT COMPLETE!"
@@ -1284,6 +1330,7 @@ func show_end_buttons() -> void:
 	cold_button.visible = false
 	dark_button.visible = false
 	music_button.visible = false
+	specialty_room_button.visible = false
 
 	restart_button.visible = true
 
@@ -1492,6 +1539,13 @@ func _on_music_room_pressed() -> void:
 	animate_button_press(music_button)
 	check_room("music")
 
+
+func _on_specialty_room_pressed() -> void:
+	if current_specialty_room_id.is_empty():
+		return
+	animate_button_press(specialty_room_button)
+	check_room(current_specialty_room_id)
+
 func get_round_count_for_night() -> int:
 	return mini(BASE_ROUNDS + (GameState.current_night - 1), 15)
 
@@ -1596,9 +1650,7 @@ func reset_special_mechanics() -> void:
 	setup_button_text()
 
 	# Restore the original scene positions after Poltergeist interference.
-	cold_button.position = Vector2(105.0, 590.0)
-	dark_button.position = Vector2(495.0, 590.0)
-	music_button.position = Vector2(885.0, 590.0)
+	_layout_room_buttons(specialty_room_button.visible)
 
 
 func get_guest_failure_penalty() -> int:
