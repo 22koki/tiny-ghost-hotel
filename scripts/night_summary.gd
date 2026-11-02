@@ -8,6 +8,7 @@ extends Control
 @onready var rank_label: Label = $SummaryPanel/Rank
 @onready var coins_label: Label = $SummaryPanel/Coins
 @onready var reputation_label: Label = $SummaryPanel/Reputation
+@onready var contract_label: Label = $SummaryPanel/Contract
 @onready var continue_button: Button = $SummaryPanel/ContinueButton
 @onready var rooms_button: Button = $SummaryPanel/RoomsButton
 @onready var book_button: Button = $SummaryPanel/BookButton
@@ -31,6 +32,19 @@ func _ready() -> void:
 	rank_label.text = "Hotel standing  •  %s" % str(data.get("rank", "Creaky Inn"))
 	coins_label.text = "+ %d GHOST COINS" % int(data.get("coins_earned", 0))
 	reputation_label.text = "+ %d REPUTATION" % int(data.get("reputation_gain", 0))
+	var contract_title := str(data.get("contract_title", ""))
+	contract_label.visible = not contract_title.is_empty()
+	if contract_label.visible:
+		var contract_reward := int(data.get("contract_reward", 0))
+		if bool(data.get("contract_completed", false)):
+			contract_label.text = "✦ CONTRACT CLEARED  •  +%d BONUS COINS" % contract_reward
+		elif bool(data.get("contract_objective_complete", false)):
+			contract_label.text = "OBJECTIVE MET  •  NIGHT FAILED, NO BONUS"
+		else:
+			contract_label.text = "CONTRACT INCOMPLETE  •  %d/%d" % [
+				int(data.get("contract_progress", 0)),
+				int(data.get("contract_target", 0))
+			]
 
 	var final_score: int = int(data.get("score", 0))
 	if final_score < 5:
