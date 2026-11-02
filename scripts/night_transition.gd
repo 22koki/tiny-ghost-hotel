@@ -107,11 +107,11 @@ func _play_cinematic() -> void:
 
 	var rattle := create_tween()
 	for knock in range(3):
-		rattle.tween_property(left_door, "position:x", 10.0, 0.045)
-		rattle.parallel().tween_property(right_door, "position:x", 630.0, 0.045)
+		rattle.tween_property(left_door, "position:x", 20.0, 0.045)
+		rattle.parallel().tween_property(right_door, "position:x", 620.0, 0.045)
 		rattle.tween_property(left_door, "position:x", 0.0, 0.07)
 		rattle.parallel().tween_property(right_door, "position:x", 640.0, 0.07)
-		rattle.tween_interval(0.08 if knock < 2 else 0.16)
+		rattle.tween_interval(0.10 if knock < 2 else 0.24)
 	await rattle.finished
 
 	var reveal_flash := create_tween()
@@ -121,7 +121,7 @@ func _play_cinematic() -> void:
 	var door_reveal := create_tween()
 	door_reveal.set_parallel(true)
 	door_reveal.tween_property(left_door, "position:x", -660.0, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	door_reveal.tween_property(right_door, "position:x", 660.0, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	door_reveal.tween_property(right_door, "position:x", 1300.0, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	door_reveal.tween_property(knob_left, "position:x", -90.0, 0.9).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	door_reveal.tween_property(knob_right, "position:x", 1300.0, 0.9).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	door_reveal.tween_property(seam, "modulate:a", 0.0, 0.36)
@@ -139,6 +139,7 @@ func _play_cinematic() -> void:
 	title_reveal.tween_property(night_label, "modulate:a", 1.0, 0.42)
 	title_reveal.tween_property(night_label, "position", target_night_position, 0.52).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	title_reveal.tween_property(night_label, "scale", Vector2.ONE, 0.48).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	title_reveal.tween_property(completion_label, "modulate:a", 1.0, 0.36)
 	title_reveal.tween_property(message, "modulate:a", 1.0, 0.38).set_delay(0.12)
 	title_reveal.tween_property(reveal, "modulate:a", 1.0, 0.42).set_delay(0.28)
 	title_reveal.tween_property(moon, "modulate:a", 0.92, 1.3)
@@ -149,7 +150,7 @@ func _play_cinematic() -> void:
 		title_haunt.tween_property(night_label, "modulate:a", 0.42, 0.045)
 		title_haunt.tween_property(night_label, "modulate:a", 1.0, 0.085)
 	await title_haunt.finished
-	await get_tree().create_timer(0.82).timeout
+	await get_tree().create_timer(1.15).timeout
 	var fade_out := create_tween()
 	fade_out.tween_property(fade_overlay, "modulate:a", 1.0, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await fade_out.finished
