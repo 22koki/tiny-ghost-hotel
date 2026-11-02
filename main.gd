@@ -451,7 +451,7 @@ func get_guest_room_bonuses(guest: Dictionary) -> Dictionary:
 	}
 
 
-func get_guest_specialty_room_id(guest: Dictionary) -> String:
+func get_guest_specialty_match(guest: Dictionary) -> Dictionary:
 	var guest_name := str(guest.get("name", ""))
 	var profile := " %s %s %s %s " % [
 		str(guest.get("personality", "")).to_lower(),
@@ -461,7 +461,7 @@ func get_guest_specialty_room_id(guest: Dictionary) -> String:
 	]
 
 	var core_room_ids := ["cold_room", "dark_room", "music_room"]
-	var selected_room_id := ""
+	var selected_match: Dictionary = {}
 	var selected_level := -1
 
 	for room_id in RoomCatalog.get_all_room_ids():
@@ -469,20 +469,52 @@ func get_guest_specialty_room_id(guest: Dictionary) -> String:
 			continue
 
 		var room: Dictionary = RoomCatalog.get_room(room_id)
-		var matched := false
+		var matching_tag := ""
 		for raw_tag in room.get("best_for", []):
 			var tag := str(raw_tag).to_lower()
 			if profile.contains(tag) or guest_matches_room_tag(tag, guest_name, guest):
-				matched = true
+				matching_tag = tag
 				break
 
-		if matched:
+		if not matching_tag.is_empty():
 			var level := int(GameState.room_levels.get(room_id, 1))
 			if level > selected_level:
-				selected_room_id = room_id
+				selected_match = {
+					"room_id": room_id,
+					"trait": get_guest_trait_hint(matching_tag)
+				}
 				selected_level = level
 
-	return selected_room_id
+	return selected_match
+
+
+func get_guest_specialty_room_id(guest: Dictionary) -> String:
+	return str(get_guest_specialty_match(guest).get("room_id", ""))
+
+
+func get_guest_trait_hint(tag: String) -> String:
+	match tag:
+		"scholar":
+			return "inventive"
+		"mechanical":
+			return "mechanical"
+		"ancient":
+			return "long-lived"
+		"nature":
+			return "nature-loving"
+		"moonlight":
+			return "moonlit"
+		"magical":
+			return "magical"
+		"strange":
+			return "unusual"
+		"vain":
+			return "elegant"
+		"social":
+			return "sociable"
+		"vip":
+			return "VIP"
+	return tag.replace("_", " ").capitalize()
 
 
 func guest_matches_room_tag(tag: String, guest_name: String, guest: Dictionary) -> bool:
@@ -693,14 +725,26 @@ func spawn_new_ghost() -> void:
 	round_time += float(room_bonuses.get("patience", 0.0))
 	round_time *= float(current_event.get("patience_multiplier", 1.0))
 
-	var room_support_message := ""
+	var support_message := ""
 	if float(room_bonuses.get("patience", 0.0)) > 0.0 or int(room_bonuses.get("score", 0)) > 0:
-		room_support_message = "  •  Hotel support: +%.1fs patience, +%d bonus point%s" % [
+		support_message = " • +%.1fs patience, +%d bonus point%s" % [
 			float(room_bonuses.get("patience", 0.0)),
 			int(room_bonuses.get("score", 0)),
 			"" if int(room_bonuses.get("score", 0)) == 1 else "s"
 		]
-	message_label.text += room_support_message
+
+	var specialty_match := get_guest_specialty_match(current_ghost)
+	if not specialty_match.is_empty():
+		var specialty_room: Dictionary = RoomCatalog.get_room(str(specialty_match.get("room_id", "")))
+		message_label.text = "Mood: %s  |  Personality: %s\nRoom clue: %s guests suit %s%s" % [
+			mood,
+			personality,
+			str(specialty_match.get("trait", "specialty")),
+			str(specialty_room.get("short_name", "a specialty room")),
+			support_message
+		]
+	elif not support_message.is_empty():
+		message_label.text += "\nRoom upgrade:%s" % support_message
 
 	time_remaining = round_time
 
