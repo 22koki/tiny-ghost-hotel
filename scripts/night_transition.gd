@@ -6,6 +6,8 @@ extends Control
 @onready var message: Label = $Message
 @onready var reveal: Label = $Reveal
 @onready var countdown: Label = $Countdown
+@onready var countdown_echo: Label = $CountdownEcho
+@onready var countdown_whisper: Label = $CountdownWhisper
 @onready var completion_label: Label = $CompletionLabel
 @onready var moon: Label = $Moon
 @onready var clock: Label = $Clock
@@ -39,6 +41,8 @@ func _prepare_text() -> void:
 	message.modulate.a = 0.0
 	reveal.modulate.a = 0.0
 	countdown.modulate.a = 0.0
+	countdown_echo.modulate.a = 0.0
+	countdown_whisper.modulate.a = 0.0
 	completion_label.modulate.a = 0.0
 	moon.modulate.a = 0.0
 	clock.modulate.a = 0.0
@@ -89,13 +93,23 @@ func _play_cinematic() -> void:
 
 	for number in [3, 2, 1]:
 		countdown.text = str(number)
+		countdown_echo.text = countdown.text
 		countdown.modulate.a = 0.0
+		countdown_echo.modulate.a = 0.0
 		countdown.scale = Vector2(0.68, 0.68)
+		countdown_echo.scale = Vector2(0.72, 0.72)
+		countdown.rotation = deg_to_rad(2.6 if number == 2 else -2.6)
+		countdown_echo.rotation = -countdown.rotation * 1.5
 		var beat := create_tween()
 		beat.tween_property(countdown, "modulate:a", 1.0, 0.06)
 		beat.parallel().tween_property(countdown, "scale", Vector2(1.12, 1.12), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		beat.parallel().tween_property(countdown_echo, "modulate:a", 0.72, 0.05)
+		beat.parallel().tween_property(countdown_echo, "scale", Vector2(1.30, 1.30), 0.34).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		beat.parallel().tween_property(countdown_whisper, "modulate:a", 0.92, 0.16)
 		beat.tween_property(countdown, "modulate:a", 0.0, 0.16)
 		beat.parallel().tween_property(countdown, "scale", Vector2(0.84, 0.84), 0.16).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		beat.parallel().tween_property(countdown, "rotation", 0.0, 0.16)
+		beat.parallel().tween_property(countdown_echo, "modulate:a", 0.0, 0.16)
 		await beat.finished
 		if number == 1:
 			var flash := create_tween()
@@ -104,6 +118,10 @@ func _play_cinematic() -> void:
 			await flash.finished
 		else:
 			await get_tree().create_timer(0.10).timeout
+
+	var whisper_fade := create_tween()
+	whisper_fade.tween_property(countdown_whisper, "modulate:a", 0.0, 0.16)
+	await whisper_fade.finished
 
 	var rattle := create_tween()
 	for knock in range(3):
