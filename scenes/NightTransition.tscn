@@ -119,6 +119,31 @@ theme_override_font_sizes/font_size = 54
 text = "☁   ☁   ☁   ☁"
 mouse_filter = 2
 
+[node name="Watcher" type="Label" parent="."]
+offset_left = 450.0
+offset_top = 150.0
+offset_right = 830.0
+offset_bottom = 525.0
+theme_override_colors/font_color = Color(0.08, 0.005, 0.025, 1)
+theme_override_font_sizes/font_size = 218
+text = "👻"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+modulate = Color(0.58, 0.015, 0.045, 0)
+
+[node name="WatcherEyes" type="Label" parent="."]
+offset_left = 566.0
+offset_top = 298.0
+offset_right = 714.0
+offset_bottom = 354.0
+theme_override_colors/font_color = Color(1.0, 0.04, 0.04, 1)
+theme_override_font_sizes/font_size = 26
+text = "●       ●"
+horizontal_alignment = 1
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0)
+
 [node name="Doors" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -164,6 +189,17 @@ theme_override_colors/font_color = Color(0.98, 0.76, 0.32, 1)
 theme_override_font_sizes/font_size = 34
 text = "●"
 horizontal_alignment = 1
+
+[node name="OmenFlash" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.72, 0.015, 0.045, 1)
+modulate = Color(1, 1, 1, 0)
 
 [node name="FadeOverlay" type="ColorRect" parent="."]
 layout_mode = 1
