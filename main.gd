@@ -23,6 +23,7 @@ var current_event: Dictionary = {}
 var room_button_order: Array[Button] = []
 var special_effect_active: bool = false
 var current_specialty_room_id: String = ""
+var night_contract: Dictionary = {}
 var current_ghost: Dictionary = {}
 var ghost_pool: Array[Dictionary] = []
 
@@ -67,6 +68,7 @@ var ghost_float_tween: Tween
 )
 
 @onready var rooms_label: Label = $RoomsLabel
+@onready var contract_label: Label = $ContractLabel
 
 @onready var cold_button: Button = $ColdRoomButton
 @onready var dark_button: Button = $DarkRoomButton
@@ -591,6 +593,8 @@ func reset_game_data() -> void:
 	current_round = 0
 	current_ghost = {}
 	current_specialty_room_id = ""
+	night_contract = {}
+	contract_label.text = ""
 	specialty_room_button.visible = false
 	_layout_room_buttons(false)
 
@@ -615,6 +619,7 @@ func start_game() -> void:
 
 	max_rounds = get_round_count_for_night()
 	current_event = get_night_event()
+	setup_night_contract()
 	lobby_title.text = "TINY GHOST HOTEL — NIGHT %d" % GameState.current_night
 	rooms_label.text = str(current_event.get("title", "Choose the perfect room"))
 
@@ -982,6 +987,7 @@ func check_room(selected_room: String) -> void:
 
 func handle_correct_answer(specialty_selected: bool = false, assigned_room_id: String = "") -> void:
 	streak += 1
+	update_night_contract(true, specialty_selected)
 	best_streak = maxi(
 		best_streak,
 		streak
@@ -1081,6 +1087,7 @@ func animate_correct_answer() -> void:
 func handle_wrong_answer() -> void:
 	lives -= get_guest_failure_penalty()
 	streak = 0
+	update_night_contract(false)
 
 	update_lives_label()
 	update_score_label()
@@ -1161,6 +1168,7 @@ func handle_timeout() -> void:
 
 	lives -= get_guest_failure_penalty()
 	streak = 0
+	update_night_contract(false)
 
 	update_lives_label()
 	update_score_label()
@@ -1278,6 +1286,7 @@ func end_game_won() -> void:
 	rooms_label.text = "A successful night"
 
 	GameState.finish_shift(score, best_streak, true, get_hotel_rank())
+	record_night_contract_result(true)
 	await get_tree().create_timer(1.4).timeout
 	get_tree().change_scene_to_file("res://scenes/NightSummary.tscn")
 
@@ -1322,6 +1331,7 @@ func end_game_lost() -> void:
 		game_over_sound.play()
 
 	GameState.finish_shift(score, best_streak, false, get_hotel_rank())
+	record_night_contract_result(false)
 	await get_tree().create_timer(1.4).timeout
 	get_tree().change_scene_to_file("res://scenes/NightSummary.tscn")
 
@@ -1592,6 +1602,97 @@ func get_night_event() -> Dictionary:
 		return events[0]
 
 	return events[randi() % events.size()]
+
+
+func setup_night_contract() -> void:
+	var has_specialty_room := false
+	for room_id in GameState.unlocked_rooms:
+		if room_id not in ["cold_room", "dark_room", "music_room"]:
+			has_specialty_room = true
+			break
+	var rotation := (GameState.current_night - 1) % 3
+	if rotation == 1:
+		night_contract = {
+			"id": "quick",
+			"title": "Quick check-ins: serve 3 guests with half their time left",
+			"target": 3,
+			"progress": 0,
+			"reward": 60,
+			"completed": false
+		}
+	elif rotation == 2 and has_specialty_room:
+		night_contract = {
+			"id": "specialty",
+			"title": "Specialty host: make 2 matched room check-ins",
+			"target": 2,
+			"progress": 0,
+			"reward": 75,
+			"completed": false
+		}
+	else:
+		night_contract = {
+			"id": "streak",
+			"title": "Hold a 3-ghost streak",
+			"target": 3,
+			"progress": 0,
+			"reward": 50,
+			"completed": false
+		}
+	_update_night_contract_label()
+
+func update_night_contract(correct_answer: bool, specialty_selected: bool = false) -> void:
+	if night_contract.is_empty() or bool(night_contract.get("completed", false)):
+		return
+
+	var objective_id := str(night_contract.get("id", ""))
+	var target := int(night_contract.get("target", 1))
+	var progress := int(night_contract.get("progress", 0))
+	match objective_id:
+		"streak":
+			progress = mini(streak if correct_answer else 0, target)
+		"quick":
+			if correct_answer and time_remaining >= round_time * 0.5:
+				progress += 1
+		"specialty":
+			if correct_answer and specialty_selected:
+				progress += 1
+
+	progress = mini(progress, target)
+	night_contract["progress"] = progress
+	if progress >= target:
+		night_contract["completed"] = true
+	_update_night_contract_label()
+
+func _update_night_contract_label() -> void:
+	if night_contract.is_empty():
+		contract_label.text = ""
+		return
+	var title := str(night_contract.get("title", "Night contract"))
+	var progress := int(night_contract.get("progress", 0))
+	var target := int(night_contract.get("target", 1))
+	var reward := int(night_contract.get("reward", 0))
+	if bool(night_contract.get("completed", false)):
+		contract_label.text = "✦ CONTRACT CLEARED — +%d COINS ON SHIFT CLEAR" % reward
+		contract_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.38, 1.0))
+	else:
+		contract_label.text = "NIGHT CONTRACT: %s  •  %d/%d  •  +%d COINS" % [title, progress, target, reward]
+		contract_label.add_theme_color_override("font_color", Color(0.91, 0.79, 0.67, 1.0))
+
+func record_night_contract_result(won: bool) -> void:
+	if night_contract.is_empty():
+		return
+	var objective_complete := bool(night_contract.get("completed", false))
+	var reward := int(night_contract.get("reward", 0)) if won and objective_complete else 0
+	if reward > 0:
+		GameState.add_coins(reward)
+	GameState.last_night_summary["contract_title"] = str(night_contract.get("title", ""))
+	GameState.last_night_summary["contract_objective_complete"] = objective_complete
+	GameState.last_night_summary["contract_completed"] = won and objective_complete
+	GameState.last_night_summary["contract_reward"] = reward
+	GameState.last_night_summary["contract_progress"] = int(night_contract.get("progress", 0))
+	GameState.last_night_summary["contract_target"] = int(night_contract.get("target", 0))
+	GameState.last_night_summary["coins_earned"] = int(GameState.last_night_summary.get("coins_earned", 0)) + reward
+	GameState.save_progress()
 
 
 func apply_guest_special_mechanic() -> void:
