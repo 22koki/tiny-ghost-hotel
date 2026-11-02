@@ -202,8 +202,9 @@ func _refresh_map() -> void:
 	for room_id in room_buttons:
 		var button: Button = room_buttons[room_id]
 		button.text = _room_button_text(room_id, RoomCatalog.get_room(room_id))
-		button.add_theme_stylebox_override("normal", _make_room_style(false, GameState.is_room_unlocked(room_id)))
-		button.add_theme_stylebox_override("hover", _make_room_style(true, GameState.is_room_unlocked(room_id)))
+		button.add_theme_stylebox_override("normal", _make_room_style(false, GameState.is_room_unlocked(room_id), room_id == selected_room_id))
+		button.add_theme_stylebox_override("hover", _make_room_style(true, GameState.is_room_unlocked(room_id), room_id == selected_room_id))
+		button.add_theme_stylebox_override("pressed", _make_room_style(true, GameState.is_room_unlocked(room_id), true))
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
