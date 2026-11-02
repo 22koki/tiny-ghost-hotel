@@ -87,10 +87,23 @@ func _play_cinematic() -> void:
 	omen.tween_property(watcher_eyes, "modulate:a", 1.0, 0.24).set_delay(0.26)
 	await omen.finished
 
-	var flash := create_tween()
-	flash.tween_property(omen_flash, "modulate:a", 0.20, 0.045)
-	flash.tween_property(omen_flash, "modulate:a", 0.0, 0.16)
-	await flash.finished
+	for number in [3, 2, 1]:
+		countdown.text = str(number)
+		countdown.modulate.a = 0.0
+		countdown.scale = Vector2(0.68, 0.68)
+		var beat := create_tween()
+		beat.tween_property(countdown, "modulate:a", 1.0, 0.06)
+		beat.parallel().tween_property(countdown, "scale", Vector2(1.12, 1.12), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		beat.tween_property(countdown, "modulate:a", 0.0, 0.16)
+		beat.parallel().tween_property(countdown, "scale", Vector2(0.84, 0.84), 0.16).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		await beat.finished
+		if number == 1:
+			var flash := create_tween()
+			flash.tween_property(omen_flash, "modulate:a", 0.24, 0.04)
+			flash.tween_property(omen_flash, "modulate:a", 0.0, 0.19)
+			await flash.finished
+		else:
+			await get_tree().create_timer(0.10).timeout
 
 	var rattle := create_tween()
 	for knock in range(3):
