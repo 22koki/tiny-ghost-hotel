@@ -52,9 +52,25 @@ func _on_continue() -> void:
 	if final_score < 5:
 		get_tree().change_scene_to_file("res://scenes/GraveyardChallenge.tscn")
 	elif bool(GameState.last_night_summary.get("won", false)):
-		get_tree().change_scene_to_file("res://scenes/NightTransition.tscn")
+		continue_button.disabled = true
+		await _fade_into_next_night()
 	else:
 		get_tree().change_scene_to_file("res://main.tscn")
+
+
+func _fade_into_next_night() -> void:
+	var curtain := ColorRect.new()
+	curtain.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	curtain.color = Color(0.008, 0.006, 0.014, 1.0)
+	curtain.modulate.a = 0.0
+	curtain.mouse_filter = Control.MOUSE_FILTER_STOP
+	curtain.z_index = 100
+	add_child(curtain)
+
+	var fade := create_tween()
+	fade.tween_property(curtain, "modulate:a", 1.0, 0.48).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	await fade.finished
+	get_tree().change_scene_to_file("res://scenes/NightTransition.tscn")
 
 func _on_rooms() -> void:
 	get_tree().change_scene_to_file("res://scenes/RoomsOverview.tscn")

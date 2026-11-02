@@ -1,14 +1,15 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/rooms_overview.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/WhatsApp Image 2026-07-11 at 2.28.02 PM.jpeg" id="2_background"]
 
 [sub_resource type="StyleBoxFlat" id="PanelStyle"]
-bg_color = Color(0.055, 0.027, 0.018, 0.96)
+bg_color = Color(0.035, 0.018, 0.045, 0.90)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.64, 0.40, 0.16, 1)
+border_color = Color(0.48, 0.31, 0.63, 1)
 corner_radius_top_left = 14
 corner_radius_top_right = 14
 corner_radius_bottom_left = 14
@@ -29,12 +30,12 @@ corner_radius_bottom_left = 8
 corner_radius_bottom_right = 8
 
 [sub_resource type="StyleBoxFlat" id="MapStyle"]
-bg_color = Color(0.075, 0.039, 0.026, 0.98)
+bg_color = Color(0.025, 0.014, 0.045, 0.70)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.48, 0.29, 0.12, 1)
+border_color = Color(0.39, 0.25, 0.56, 0.95)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_left = 10
@@ -59,6 +60,28 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.018, 0.009, 0.014, 1)
+
+[node name="HotelBackground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_background")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="AtmosphereTint" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.006, 0.055, 0.50)
 
 [node name="Moon" type="Label" parent="."]
 offset_left = 30.0
@@ -129,39 +152,55 @@ theme_override_colors/font_color = Color(0.78, 0.67, 0.50, 1)
 theme_override_font_sizes/font_size = 16
 text = "THE OLD HOTEL"
 
-[node name="RoofLine" type="Label" parent="HotelMap"]
-offset_left = 0.0
-offset_top = 52.0
-offset_right = 829.0
-offset_bottom = 76.0
-theme_override_colors/font_color = Color(0.34, 0.19, 0.08, 1)
-theme_override_font_sizes/font_size = 17
-text = "╱╲      ╱╲      ╱╲      ╱╲"
-horizontal_alignment = 1
-
-[node name="FloorThree" type="ColorRect" parent="HotelMap"]
-offset_left = 26.0
-offset_top = 78.0
-offset_right = 803.0
-offset_bottom = 190.0
+[node name="NorthwestCobweb" type="Label" parent="HotelMap"]
+offset_left = 36.0
+offset_top = 54.0
+offset_right = 92.0
+offset_bottom = 96.0
 mouse_filter = 2
-color = Color(0.11, 0.055, 0.03, 0.36)
+theme_override_colors/font_color = Color(0.82, 0.77, 0.86, 0.58)
+theme_override_font_sizes/font_size = 30
+text = "🕸"
 
-[node name="FloorTwo" type="ColorRect" parent="HotelMap"]
-offset_left = 26.0
-offset_top = 208.0
-offset_right = 803.0
-offset_bottom = 320.0
+[node name="Portraits" type="Label" parent="HotelMap"]
+offset_left = 735.0
+offset_top = 104.0
+offset_right = 792.0
+offset_bottom = 148.0
 mouse_filter = 2
-color = Color(0.09, 0.045, 0.027, 0.44)
+theme_override_colors/font_color = Color(0.83, 0.69, 0.60, 0.68)
+theme_override_font_sizes/font_size = 27
+text = "🖼"
 
-[node name="FloorOne" type="ColorRect" parent="HotelMap"]
-offset_left = 26.0
-offset_top = 338.0
-offset_right = 803.0
-offset_bottom = 450.0
+[node name="LeftCandle" type="Label" parent="HotelMap"]
+offset_left = 20.0
+offset_top = 296.0
+offset_right = 62.0
+offset_bottom = 338.0
 mouse_filter = 2
-color = Color(0.07, 0.035, 0.023, 0.52)
+theme_override_colors/font_color = Color(1, 0.73, 0.40, 0.82)
+theme_override_font_sizes/font_size = 27
+text = "🕯"
+
+[node name="RightCandle" type="Label" parent="HotelMap"]
+offset_left = 766.0
+offset_top = 420.0
+offset_right = 808.0
+offset_bottom = 462.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.73, 0.40, 0.82)
+theme_override_font_sizes/font_size = 27
+text = "🕯"
+
+[node name="WatchingEye" type="Label" parent="HotelMap"]
+offset_left = 374.0
+offset_top = 456.0
+offset_right = 414.0
+offset_bottom = 490.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.34, 0.40, 0.72)
+theme_override_font_sizes/font_size = 22
+text = "👁"
 
 [node name="FloorThreeLabel" type="Label" parent="HotelMap"]
 offset_left = 14.0
