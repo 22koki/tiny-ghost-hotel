@@ -348,9 +348,9 @@ func setup_mouse_filters() -> void:
 
 
 func setup_button_text() -> void:
-	cold_button.text = "❄ COLD ROOM\nQuiet and chilly"
-	dark_button.text = "🌑 DARK ROOM\nDim and restful"
-	music_button.text = "🎵 MUSIC ROOM\nSoft spooky tunes"
+	cold_button.text = "❄ COLD ROOM · LV %d\nQuiet and chilly" % get_core_room_level("cold")
+	dark_button.text = "🌑 DARK ROOM · LV %d\nDim and restful" % get_core_room_level("dark")
+	music_button.text = "🎵 MUSIC ROOM · LV %d\nSoft spooky tunes" % get_core_room_level("music")
 
 	restart_button.text = "PLAY AGAIN"
 	menu_button.text = "MAIN MENU"
@@ -414,6 +414,100 @@ func setup_button_animations() -> void:
 			button.mouse_exited.connect(
 				_on_button_mouse_exited.bind(button)
 			)
+
+
+func get_core_room_id(preference: String) -> String:
+	return {
+		"cold": "cold_room",
+		"dark": "dark_room",
+		"music": "music_room"
+	}.get(preference, "")
+
+
+func get_core_room_level(preference: String) -> int:
+	var room_id := get_core_room_id(preference)
+	if room_id.is_empty():
+		return 1
+	return int(GameState.room_levels.get(room_id, 1))
+
+
+func get_guest_room_bonuses(guest: Dictionary) -> Dictionary:
+	var core_level := get_core_room_level(str(guest.get("preference", "")))
+	var specialty_room_id := get_guest_specialty_room_id(guest)
+	var patience_bonus := float(maxi(0, core_level - 1)) * 0.4
+	var score_bonus := 1 if core_level >= 3 else 0
+
+	if not specialty_room_id.is_empty():
+		patience_bonus += 0.5
+		score_bonus += 1
+
+	return {
+		"patience": patience_bonus,
+		"score": score_bonus,
+		"specialty_room_id": specialty_room_id
+	}
+
+
+func get_guest_specialty_room_id(guest: Dictionary) -> String:
+	var guest_name := str(guest.get("name", ""))
+	var profile := " %s %s %s %s " % [
+		str(guest.get("personality", "")).to_lower(),
+		str(guest.get("mood", "")).to_lower(),
+		str(guest.get("preference", "")).to_lower(),
+		str(guest.get("intro", "")).to_lower()
+	]
+
+	var core_room_ids := ["cold_room", "dark_room", "music_room"]
+	var selected_room_id := ""
+	var selected_level := -1
+
+	for room_id in RoomCatalog.get_all_room_ids():
+		if room_id in core_room_ids or not GameState.is_room_unlocked(room_id):
+			continue
+
+		var room: Dictionary = RoomCatalog.get_room(room_id)
+		var matched := false
+		for raw_tag in room.get("best_for", []):
+			var tag := str(raw_tag).to_lower()
+			if profile.contains(tag) or guest_matches_room_tag(tag, guest_name, guest):
+				matched = true
+				break
+
+		if matched:
+			var level := int(GameState.room_levels.get(room_id, 1))
+			if level > selected_level:
+				selected_room_id = room_id
+				selected_level = level
+
+	return selected_room_id
+
+
+func guest_matches_room_tag(tag: String, guest_name: String, guest: Dictionary) -> bool:
+	match tag:
+		"scholar", "mechanical":
+			return guest_name == "Professor Cog"
+		"ancient":
+			return guest_name in ["Echo", "Lord Nocturne", "Count Vesper", "Mabel Mourning", "The Headless Traveller"]
+		"nature":
+			return guest_name in ["Frosty", "Misty", "Little Lucien"]
+		"moonlight":
+			return guest_name in ["Lord Nocturne", "Lady Glimmer", "Madame Umbra"]
+		"magical", "strange":
+			return guest_name in ["The Poltergeist", "Madame Umbra", "Count Vesper"]
+		"vain":
+			return guest_name in ["Lady Glimmer", "Count Vesper"]
+		"social":
+			return guest_name in ["The Bell Twins", "Mabel Mourning"]
+		"vip":
+			return bool(guest.get("vip", false))
+	return false
+
+
+func get_guest_room_assignment(guest: Dictionary) -> String:
+	var specialty_room_id := get_guest_specialty_room_id(guest)
+	if not specialty_room_id.is_empty():
+		return specialty_room_id
+	return get_core_room_id(str(guest.get("preference", "")))
 
 
 func reset_game_data() -> void:
@@ -592,7 +686,18 @@ func spawn_new_ghost() -> void:
 		)
 	)
 	round_time *= get_patience_multiplier()
+	var room_bonuses := get_guest_room_bonuses(current_ghost)
+	round_time += float(room_bonuses.get("patience", 0.0))
 	round_time *= float(current_event.get("patience_multiplier", 1.0))
+
+	var room_support_message := ""
+	if float(room_bonuses.get("patience", 0.0)) > 0.0 or int(room_bonuses.get("score", 0)) > 0:
+		room_support_message = "  •  Hotel support: +%.1fs patience, +%d bonus point%s" % [
+			float(room_bonuses.get("patience", 0.0)),
+			int(room_bonuses.get("score", 0)),
+			"" if int(room_bonuses.get("score", 0)) == 1 else "s"
+		]
+	message_label.text += room_support_message
 
 	time_remaining = round_time
 
@@ -766,11 +871,7 @@ func check_room(selected_room: String) -> void:
 	)
 
 	if selected_room == correct_room:
-		var room_id: String = {
-			"cold": "cold_room",
-			"dark": "dark_room",
-			"music": "music_room"
-		}.get(selected_room, "")
+		var room_id := get_guest_room_assignment(current_ghost)
 		if not room_id.is_empty():
 			GameState.check_in_guest(
 				room_id,
@@ -813,11 +914,14 @@ func handle_correct_answer() -> void:
 			"The ghost"
 		)
 	)
+	var assigned_room: Dictionary = RoomCatalog.get_room(get_guest_room_assignment(current_ghost))
+	var room_name := str(assigned_room.get("short_name", "room"))
 
 	message_label.text = (
-		"%s is delighted! %s  +%d points"
+		"%s is delighted in the %s! %s  +%d points"
 		% [
 			ghost_name,
+			room_name,
 			get_success_message(),
 			gained_score
 		]
@@ -837,6 +941,7 @@ func calculate_score_gain() -> int:
 			1
 		)
 	)
+	gained_score += int(get_guest_room_bonuses(current_ghost).get("score", 0))
 
 	if streak >= 3:
 		gained_score += 1
