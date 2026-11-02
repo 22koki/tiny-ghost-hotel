@@ -14,6 +14,9 @@ extends Control
 @onready var seam: ColorRect = $Doors/Seam
 @onready var knob_left: Label = $Doors/KnobLeft
 @onready var knob_right: Label = $Doors/KnobRight
+@onready var watcher: Label = $Watcher
+@onready var watcher_eyes: Label = $WatcherEyes
+@onready var omen_flash: ColorRect = $OmenFlash
 @onready var fade_overlay: ColorRect = $FadeOverlay
 
 var scene_night: int = 1
@@ -35,6 +38,9 @@ func _prepare_text() -> void:
 	reveal.modulate.a = 0.0
 	moon.modulate.a = 0.0
 	clock.modulate.a = 0.0
+	watcher.modulate.a = 0.0
+	watcher_eyes.modulate.a = 0.0
+	omen_flash.modulate.a = 0.0
 	fade_overlay.modulate.a = 1.0
 
 
@@ -66,6 +72,30 @@ func _play_cinematic() -> void:
 	fade_in.tween_property(fog_right, "modulate:a", 0.34, 0.9)
 	await fade_in.finished
 
+	var omen := create_tween()
+	omen.set_parallel(true)
+	omen.tween_property(moon, "modulate", Color(0.78, 0.06, 0.12, 0.9), 0.52).set_trans(Tween.TRANS_SINE)
+	omen.tween_property(tint, "color", Color(0.035, 0.004, 0.018, 0.72), 0.5)
+	omen.tween_property(seam, "modulate", Color(1.0, 0.12, 0.08, 1.0), 0.36)
+	omen.tween_property(watcher, "modulate:a", 0.82, 0.38)
+	omen.tween_property(watcher, "scale", Vector2(1.22, 1.22), 0.72).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	omen.tween_property(watcher_eyes, "modulate:a", 1.0, 0.24).set_delay(0.26)
+	await omen.finished
+
+	var flash := create_tween()
+	flash.tween_property(omen_flash, "modulate:a", 0.20, 0.045)
+	flash.tween_property(omen_flash, "modulate:a", 0.0, 0.16)
+	await flash.finished
+
+	var rattle := create_tween()
+	for knock in range(3):
+		rattle.tween_property(left_door, "position:x", 10.0, 0.045)
+		rattle.parallel().tween_property(right_door, "position:x", 630.0, 0.045)
+		rattle.tween_property(left_door, "position:x", 0.0, 0.07)
+		rattle.parallel().tween_property(right_door, "position:x", 640.0, 0.07)
+		rattle.tween_interval(0.08 if knock < 2 else 0.16)
+	await rattle.finished
+
 	var door_reveal := create_tween()
 	door_reveal.set_parallel(true)
 	door_reveal.tween_property(left_door, "position:x", -660.0, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
@@ -73,6 +103,11 @@ func _play_cinematic() -> void:
 	door_reveal.tween_property(knob_left, "position:x", -90.0, 0.9).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	door_reveal.tween_property(knob_right, "position:x", 1300.0, 0.9).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	door_reveal.tween_property(seam, "modulate:a", 0.0, 0.36)
+	door_reveal.tween_property(watcher, "modulate:a", 0.0, 0.24)
+	door_reveal.tween_property(watcher_eyes, "modulate:a", 0.0, 0.12)
+	door_reveal.tween_property(watcher, "scale", Vector2(1.75, 1.75), 0.46).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	door_reveal.tween_property(omen_flash, "modulate:a", 0.14, 0.05)
+	door_reveal.tween_property(omen_flash, "modulate:a", 0.0, 0.22)
 	door_reveal.tween_property(backdrop, "scale", Vector2.ONE, 1.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	door_reveal.tween_property(tint, "color", Color(0.012, 0.008, 0.022, 0.42), 1.2).set_trans(Tween.TRANS_SINE)
 	door_reveal.tween_property(fog_left, "position:x", -70.0, 2.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
@@ -89,7 +124,12 @@ func _play_cinematic() -> void:
 	title_reveal.tween_property(moon, "modulate:a", 0.92, 1.3)
 	await title_reveal.finished
 
-	await get_tree().create_timer(1.05).timeout
+	var title_haunt := create_tween()
+	for flicker in range(2):
+		title_haunt.tween_property(night_label, "modulate:a", 0.42, 0.045)
+		title_haunt.tween_property(night_label, "modulate:a", 1.0, 0.085)
+	await title_haunt.finished
+	await get_tree().create_timer(0.82).timeout
 	var fade_out := create_tween()
 	fade_out.tween_property(fade_overlay, "modulate:a", 1.0, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await fade_out.finished
