@@ -107,10 +107,16 @@ func _play_cinematic() -> void:
 
 	var rattle := create_tween()
 	for knock in range(3):
-		rattle.tween_property(left_door, "position:x", 20.0, 0.045)
-		rattle.parallel().tween_property(right_door, "position:x", 620.0, 0.045)
-		rattle.tween_property(left_door, "position:x", 0.0, 0.07)
-		rattle.parallel().tween_property(right_door, "position:x", 640.0, 0.07)
+		var jolt := float(knock + 1) * 8.0
+		var impact_flash := 0.10 + float(knock) * 0.05
+		rattle.tween_property(left_door, "position:x", jolt, 0.045)
+		rattle.parallel().tween_property(right_door, "position:x", 640.0 - jolt, 0.045)
+		rattle.parallel().tween_property(backdrop, "scale", Vector2(1.14, 1.14), 0.045)
+		rattle.parallel().tween_property(omen_flash, "modulate:a", impact_flash, 0.035)
+		rattle.tween_property(left_door, "position:x", 0.0, 0.065)
+		rattle.parallel().tween_property(right_door, "position:x", 640.0, 0.065)
+		rattle.parallel().tween_property(backdrop, "scale", Vector2(1.10, 1.10), 0.065)
+		rattle.parallel().tween_property(omen_flash, "modulate:a", 0.0, 0.06)
 		rattle.tween_interval(0.10 if knock < 2 else 0.24)
 	await rattle.finished
 
