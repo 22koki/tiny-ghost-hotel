@@ -46,24 +46,32 @@ func _build_hotel_map() -> void:
 		button.add_theme_font_size_override("font_size", 14)
 		button.add_theme_color_override("font_color", Color(0.93, 0.82, 0.65))
 		button.add_theme_color_override("font_hover_color", Color(1.0, 0.94, 0.76))
-		button.add_theme_stylebox_override("normal", _make_room_style(false, GameState.is_room_unlocked(room_id)))
-		button.add_theme_stylebox_override("hover", _make_room_style(true, GameState.is_room_unlocked(room_id)))
+		button.add_theme_stylebox_override("normal", _make_room_style(false, GameState.is_room_unlocked(room_id), room_id == selected_room_id))
+		button.add_theme_stylebox_override("hover", _make_room_style(true, GameState.is_room_unlocked(room_id), room_id == selected_room_id))
+		button.add_theme_stylebox_override("pressed", _make_room_style(true, GameState.is_room_unlocked(room_id), true))
 		button.pressed.connect(_on_room_selected.bind(room_id))
 		hotel_map.add_child(button)
 		room_buttons[room_id] = button
 
-func _make_room_style(hovered: bool, unlocked: bool) -> StyleBoxFlat:
+func _make_room_style(hovered: bool, unlocked: bool, selected: bool = false) -> StyleBoxFlat:
 	var style: StyleBoxFlat = StyleBoxFlat.new()
 	if unlocked:
-		style.bg_color = Color(0.16, 0.075, 0.035, 0.98) if not hovered else Color(0.28, 0.13, 0.05, 1.0)
-		style.border_color = Color(0.69, 0.44, 0.18, 1.0) if not hovered else Color(1.0, 0.72, 0.30, 1.0)
+		if selected:
+			style.bg_color = Color(0.12, 0.075, 0.19, 0.94)
+			style.border_color = Color(0.82, 0.66, 1.0, 1.0)
+		elif hovered:
+			style.bg_color = Color(0.15, 0.09, 0.19, 0.92)
+			style.border_color = Color(0.76, 0.58, 0.92, 1.0)
+		else:
+			style.bg_color = Color(0.075, 0.045, 0.075, 0.80)
+			style.border_color = Color(0.63, 0.47, 0.66, 0.90)
 	else:
-		style.bg_color = Color(0.055, 0.045, 0.045, 0.96)
-		style.border_color = Color(0.22, 0.19, 0.17, 1.0)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.shadow_color = Color(0, 0, 0, 0.72)
-	style.shadow_size = 8 if not hovered else 14
+		style.bg_color = Color(0.035, 0.025, 0.045, 0.88)
+		style.border_color = Color(0.28, 0.24, 0.32, 0.88)
+	style.set_border_width_all(3 if selected else 1)
+	style.set_corner_radius_all(20)
+	style.shadow_color = Color(0.42, 0.20, 0.66, 0.62) if selected else Color(0.72, 0.48, 0.24, 0.34)
+	style.shadow_size = 13 if selected else (9 if hovered else 5)
 	return style
 
 func _room_button_text(room_id: String, data: Dictionary) -> String:
@@ -96,6 +104,13 @@ func _select_first_room() -> void:
 
 func _on_room_selected(room_id: String) -> void:
 	selected_room_id = room_id
+	for room_key in room_buttons:
+		var room_button: Button = room_buttons[room_key]
+		var is_selected: bool = room_key == selected_room_id
+		var is_unlocked: bool = GameState.is_room_unlocked(room_key)
+		room_button.add_theme_stylebox_override("normal", _make_room_style(false, is_unlocked, is_selected))
+		room_button.add_theme_stylebox_override("hover", _make_room_style(true, is_unlocked, is_selected))
+		room_button.add_theme_stylebox_override("pressed", _make_room_style(true, is_unlocked, true))
 	var data: Dictionary = RoomCatalog.get_room(room_id)
 	var unlocked: bool = GameState.is_room_unlocked(room_id)
 	var level: int = int(GameState.room_levels.get(room_id, 1))
