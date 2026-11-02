@@ -96,6 +96,10 @@ func _play_cinematic() -> void:
 		rattle.tween_interval(0.08 if knock < 2 else 0.16)
 	await rattle.finished
 
+	var reveal_flash := create_tween()
+	reveal_flash.tween_property(omen_flash, "modulate:a", 0.14, 0.05)
+	reveal_flash.tween_property(omen_flash, "modulate:a", 0.0, 0.22)
+
 	var door_reveal := create_tween()
 	door_reveal.set_parallel(true)
 	door_reveal.tween_property(left_door, "position:x", -660.0, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
@@ -106,8 +110,6 @@ func _play_cinematic() -> void:
 	door_reveal.tween_property(watcher, "modulate:a", 0.0, 0.24)
 	door_reveal.tween_property(watcher_eyes, "modulate:a", 0.0, 0.12)
 	door_reveal.tween_property(watcher, "scale", Vector2(1.75, 1.75), 0.46).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	door_reveal.tween_property(omen_flash, "modulate:a", 0.14, 0.05)
-	door_reveal.tween_property(omen_flash, "modulate:a", 0.0, 0.22)
 	door_reveal.tween_property(backdrop, "scale", Vector2.ONE, 1.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	door_reveal.tween_property(tint, "color", Color(0.012, 0.008, 0.022, 0.42), 1.2).set_trans(Tween.TRANS_SINE)
 	door_reveal.tween_property(fog_left, "position:x", -70.0, 2.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
