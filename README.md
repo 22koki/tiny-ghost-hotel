@@ -50,7 +50,7 @@ The hotel contains 12 themed rooms:
 - The Royal Haunt
 - The Looking-Glass Room
 
-Rooms unlock across later nights and can be upgraded using Ghost Coins. During shifts, upgraded Cold, Dark, and Music rooms give matching guests extra patience; level 3 rooms also add a service point. Unlocked specialty rooms can host compatible guests automatically, with bonuses that grow as those rooms are upgraded.
+Rooms unlock across later nights and can be upgraded using Ghost Coins. During shifts, upgraded Cold, Dark, and Music rooms give matching guests extra patience; level 3 rooms also add a service point. Unlocked specialty rooms can host compatible guests automatically, with bonuses that grow as those rooms are upgraded. When a guest matches one, the reception screen shows a short room clue that names the fitting room and guest trait.
 
 ## Ghost collection
 
