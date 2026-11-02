@@ -114,10 +114,20 @@ func _on_room_selected(room_id: String) -> void:
 		)
 	else:
 		occupancy_label.text = "STATUS: SEALED"
-	detail_body.text = "%s\n\nBest for: %s\n\n%s" % [
+	var room_effect := ""
+	if unlocked:
+		if room_id in ["cold_room", "dark_room", "music_room"]:
+			room_effect = "Upgrade effect: +0.4 seconds of patience per level; level 3 adds a service point."
+		else:
+			room_effect = "Matching guests receive +0.5 seconds and +1 service point. Each upgrade adds patience; level 3 adds another point."
+	else:
+		room_effect = "This room is still sealed behind an old brass lock."
+
+	detail_body.text = "%s\n\nBest for: %s\n\nRoom Level: %d\n%s" % [
 		str(data.get("theme", "")),
 		", ".join(best_for),
-		"Room Level: %d\nUpgrades improve comfort and future earnings." % level if unlocked else "This room is still sealed behind an old brass lock."
+		level,
+		room_effect
 	]
 
 	if unlocked:
