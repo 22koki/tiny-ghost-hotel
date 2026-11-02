@@ -438,8 +438,11 @@ func get_guest_room_bonuses(guest: Dictionary) -> Dictionary:
 	var score_bonus := 1 if core_level >= 3 else 0
 
 	if not specialty_room_id.is_empty():
-		patience_bonus += 0.5
+		var specialty_level := int(GameState.room_levels.get(specialty_room_id, 1))
+		patience_bonus += 0.5 + float(maxi(0, specialty_level - 1)) * 0.25
 		score_bonus += 1
+		if specialty_level >= 3:
+			score_bonus += 1
 
 	return {
 		"patience": patience_bonus,
