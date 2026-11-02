@@ -5,6 +5,8 @@ extends Control
 @onready var night_label: Label = $NightLabel
 @onready var message: Label = $Message
 @onready var reveal: Label = $Reveal
+@onready var countdown: Label = $Countdown
+@onready var completion_label: Label = $CompletionLabel
 @onready var moon: Label = $Moon
 @onready var clock: Label = $Clock
 @onready var fog_left: Label = $FogLeft
@@ -36,6 +38,8 @@ func _prepare_text() -> void:
 	night_label.modulate.a = 0.0
 	message.modulate.a = 0.0
 	reveal.modulate.a = 0.0
+	countdown.modulate.a = 0.0
+	completion_label.modulate.a = 0.0
 	moon.modulate.a = 0.0
 	clock.modulate.a = 0.0
 	watcher.modulate.a = 0.0
@@ -49,6 +53,7 @@ func _play_cinematic() -> void:
 	backdrop.pivot_offset = backdrop.size / 2.0
 	night_label.pivot_offset = night_label.size / 2.0
 	clock.pivot_offset = clock.size / 2.0
+	countdown.pivot_offset = countdown.size / 2.0
 
 	backdrop.scale = Vector2(1.14, 1.14)
 	night_label.scale = Vector2(0.82, 0.82)
